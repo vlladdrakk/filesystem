@@ -6,15 +6,16 @@
 superblock* super;
 void* partition;
 
-// void print_block(void* block) {
-// 	for (int i = 0; i < BLK_SIZE; i++) {
-// 		printf("%c", (char)block[i]);
-// 	}
-// }
+void print_block(int* block) {
+	int i;
+	for (int i = 0; i < BLK_SIZE; i++) {
+		printf("%d", block[i]);
+	}
+}
 
 void print_superblock(superblock sblock) {
-	printf("name: %s\nflags: %d\nroot_block: %d\nnum_free_blocks: %d\nblock_map %d\n",
-		sblock.name, sblock.flags, sblock.root_block, sblock.num_free_blocks, sblock.block_map[0]);
+	printf("name: %s\nflags: %d\nroot_block: %d\nnum_free_blocks: %d\nblock_map %d-%d\n",
+		sblock.name, sblock.flags, sblock.root_block, sblock.num_free_blocks, sblock.block_map[1],sblock.block_map[0]);
 }
 
 void* get_position_pointer(int pos) {
@@ -51,7 +52,6 @@ inode* read_inode(int pos) {
 }
 
 void reserve_block(int pos) {
-	puts("here");
 	super->block_map[pos/8] |= 1 << pos % 8;
 	super->num_free_blocks--;
 }
@@ -81,7 +81,7 @@ int alloc_block() {
 
 	return pos;
 }
-
+// TO DO : check block size limit 
 void add_to_directory(int directory_pos, int inode_pos) {
 	inode* directory = read_inode(directory_pos);
 
@@ -100,6 +100,38 @@ void add_to_directory(int directory_pos, int inode_pos) {
 	directory->file_size++;
 }
 
+void remove_from_directory(int directory_pos,int inode_pos){
+	// find reference to inode
+	int i;
+	int flag = 0;
+	inode* directory = read_inode(directory_pos);
+	for (i = 0; i<190 ; i++){
+		if (directory->direct_refs[i] == inode_pos) {
+			directory->direct_refs[i] = 0;
+			free_block(inode_pos);
+			flag = 1;
+		}
+	}
+	if (!flag && directory->indirect_ref != 0){
+		int block_index = -1;
+		int* block = (int*)get_position_pointer(directory->indirect_ref);
+		for (i = 0; i< directory->file_size - 190; i++){
+			if (block[i] == inode_pos){
+				block[i] = 0;
+				free_block(inode_pos);
+				block_index = i;
+				// free whole block if no indirect_ref?
+
+			}
+		}
+		if (block_index >= 0){
+			// Put the last block_ref into empty block
+			block[block_index] = block[directory->file_size - 190 - 1];
+		}
+
+	}
+	directory->file_size --;
+}
 void* format(char* name, char flags, int num_blocks) {
 	partition = malloc(num_blocks * BLK_SIZE);
 
@@ -126,9 +158,21 @@ void* format(char* name, char flags, int num_blocks) {
 int main() {
 	format("p1", 1, 1024);
 	read_inode(super->root_block)->file_size = 190;
-	inode n = init_inode("test", 1, 10);
-	int pos = alloc_block();
-	write_inode(n, pos);
-	add_to_directory(super->root_block, pos);
+	int i,pos;
+	for (i=0; i<7; i++) {
+		inode n = init_inode("test"+i, 1, 10);
+		pos = alloc_block();
+		write_inode(n, pos);
+		printf("adding %d to dir.\n",pos);
+		add_to_directory(super->root_block, pos);
+	}
 	print_superblock(*super);
+//	int* block = (int*)get_position_pointer(read_inode(super->root_block)->indirect_ref);
+//	print_block(block);
+	printf("removing from dir:\n");
+	remove_from_directory(super->root_block,2);
+	print_superblock(*super);
+//	block = (int*)get_position_pointer(read_inode(super->root_block)->indirect_ref);
+//	print_block(block);
+
 }

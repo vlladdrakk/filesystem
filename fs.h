@@ -11,7 +11,7 @@ typedef struct {
 	int num_blocks; /* number of blocks in the partition */
 	int root_block; /* block number of the root inode */
 	int num_free_blocks; /* number of blocks that are free */
-	char block_map[756]; /* bit map of used(1)/free(0) blocks */
+	unsigned char block_map[756]; /* bit map of used(1)/free(0) blocks */
 } superblock;
 
 typedef struct {
