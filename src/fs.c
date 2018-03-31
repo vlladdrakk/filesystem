@@ -8,7 +8,7 @@ void* partition;
 
 void print_block(int* block) {
 	int i;
-	for (int i = 0; i < BLK_SIZE; i++) {
+	for (i = 0; i < BLK_SIZE; i++) {
 		printf("%d", block[i]);
 	}
 }
@@ -100,7 +100,7 @@ void add_to_directory(int directory_pos, int inode_pos) {
 	directory->file_size++;
 }
 
-void remove_from_directory(int directory_pos,int inode_pos){
+void remove_from_directory(int directory_pos,int inode_pos) {
 	// find reference to inode
 	int i;
 	int flag = 0;
@@ -153,26 +153,4 @@ void* format(char* name, char flags, int num_blocks) {
 	print_superblock(*super);
 
 	return partition;
-}
-
-int main() {
-	format("p1", 1, 1024);
-	read_inode(super->root_block)->file_size = 190;
-	int i,pos;
-	for (i=0; i<7; i++) {
-		inode n = init_inode("test"+i, 1, 10);
-		pos = alloc_block();
-		write_inode(n, pos);
-		printf("adding %d to dir.\n",pos);
-		add_to_directory(super->root_block, pos);
-	}
-	print_superblock(*super);
-//	int* block = (int*)get_position_pointer(read_inode(super->root_block)->indirect_ref);
-//	print_block(block);
-	printf("removing from dir:\n");
-	remove_from_directory(super->root_block,2);
-	print_superblock(*super);
-//	block = (int*)get_position_pointer(read_inode(super->root_block)->indirect_ref);
-//	print_block(block);
-
 }

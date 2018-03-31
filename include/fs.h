@@ -21,4 +21,34 @@ typedef struct {
 	int indirect_ref; /* indirect reference */
 } inode;
 
+void print_block(int* block);
+
+void print_superblock(superblock sblock);
+
+void* get_position_pointer(int pos);
+
+void read_super(void* ptr);
+
+void write_super(superblock s_block);
+
+inode init_inode(char* name, char flags, int file_size);
+
+void write_inode(inode inode_in, int pos);
+
+inode* read_inode(int pos);
+
+void reserve_block(int pos);
+
+void free_block(int pos);
+
+int get_bit(int pos);
+
+int alloc_block();
+
+void add_to_directory(int directory_pos, int inode_pos);
+
+void remove_from_directory(int directory_pos,int inode_pos);
+
+void* format(char* name, char flags, int num_blocks);
+
 #endif
