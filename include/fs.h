@@ -41,7 +41,7 @@ void reserve_block(int pos);
 
 void free_block(int pos);
 
-int get_bit(int pos);
+int check_block(int pos);
 
 int alloc_block();
 
@@ -50,5 +50,7 @@ void add_to_directory(int directory_pos, int inode_pos);
 void remove_from_directory(int directory_pos,int inode_pos);
 
 void* format(char* name, char flags, int num_blocks);
+
+int mkdir(char* name, char flags);
 
 #endif

@@ -1,7 +1,8 @@
-#include "fs.h"
-#include "string.h"
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "common.h"
+#include "fs.h"
 
 superblock* super;
 void* partition;
@@ -52,6 +53,11 @@ inode* read_inode(int pos) {
 }
 
 void reserve_block(int pos) {
+	if (super != NULL && check_block(pos) == 1) {
+		printf("Error! Attempting to reserve a reserved block: %d\n", pos);
+		exit(1);
+	}
+
 	super->block_map[pos/8] |= 1 << pos % 8;
 	super->num_free_blocks--;
 }
@@ -61,7 +67,7 @@ void free_block(int pos) {
 	super->num_free_blocks++;
 }
 
-int get_bit(int pos) {
+int check_block(int pos) {
 	return (super->block_map[pos/8] >> pos % 8) & 1;
 }
 
@@ -70,7 +76,7 @@ int alloc_block() {
 	// Find free block
 	int i;
 	for (i = 0; i < super->num_blocks; i++) {
-		if (get_bit(i) == 0) {
+		if (check_block(i) == 0) {
 			pos = i;
 			break;
 		}
@@ -81,7 +87,7 @@ int alloc_block() {
 
 	return pos;
 }
-// TO DO : check block size limit 
+// TO DO : check block size limit
 void add_to_directory(int directory_pos, int inode_pos) {
 	inode* directory = read_inode(directory_pos);
 
@@ -132,6 +138,53 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 	}
 	directory->file_size --;
 }
+
+inode* get_child(inode* dir, char* child) {
+	// Check in direct references
+	int i;
+	for (i = 0; i < dir->file_size; i++) {
+		if (dir->direct_refs[i] == 0)
+			break;
+
+		inode* temp = read_inode(dir->direct_refs[i]);
+		if (strcmp(temp->filename, child) == 0)
+			return temp;
+	}
+
+	return NULL;
+}
+
+int mkdir(char* name, char flags) {
+	// validate path
+	char** directories = strsplit("/etc/var/etc/", "/");
+	inode* current_dir, *child;
+	int valid_dir = 1;
+
+	current_dir = read_inode(super->root_block);
+	int i = 0;
+	while (directories[i] != NULL) {
+		// printf("%d: %s\n", i, directories[i]);
+		if ((child = get_child(current_dir, directories[i])) != NULL) {
+			printf("/%s\n", directories[i]);
+			current_dir = child;
+		} else {
+			valid_dir = 0;
+			break;
+		}
+		i++;
+	}
+
+	// Get parent inode
+
+	// Run checks on parent
+
+	// create directory inode
+
+	// Attach new directory inode
+
+	return valid_dir;
+}
+
 void* format(char* name, char flags, int num_blocks) {
 	partition = malloc(num_blocks * BLK_SIZE);
 
@@ -142,15 +195,15 @@ void* format(char* name, char flags, int num_blocks) {
 	strncpy(new_superblock.name, name, strlen(name));
 	new_superblock.flags = flags;
 	new_superblock.num_blocks = num_blocks;
-	new_superblock.root_block = 1; 
+	new_superblock.root_block = 1;
 	new_superblock.num_free_blocks = num_blocks;
 	memset(new_superblock.block_map, 0, sizeof(char)*756);
 	write_super(new_superblock);
 	reserve_block(0);
 	reserve_block(1);
 
-	printf("%d\n", super->block_map[0]);
-	print_superblock(*super);
+	// printf("%d\n", super->block_map[0]);
+	// print_superblock(*super);
 
 	return partition;
 }
