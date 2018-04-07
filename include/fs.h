@@ -35,6 +35,8 @@ void print_block(int* block);
 
 void print_superblock(superblock sblock);
 
+void print_partition();
+
 void* get_position_pointer(int pos);
 
 void read_super(void* ptr);

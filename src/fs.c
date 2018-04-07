@@ -19,6 +19,26 @@ void print_superblock(superblock sblock) {
 		sblock.name, sblock.flags, sblock.root_block, sblock.num_free_blocks, sblock.block_map[1],sblock.block_map[0]);
 }
 
+void print_partition() {
+	int x = 15;
+	int y = (super->num_blocks / x) + 1;
+	int pos = 0;
+	puts("Block Map:");
+
+	int i, j;
+	for (i = 0; i < y; i++) {
+		for (j = 0; j < x; j++) {
+			if (pos > super->num_blocks)
+				printf("x ");
+			else
+				printf("%d ", check_block(pos));
+
+			pos++;
+		}
+		printf("\n");
+	}
+}
+
 void* get_position_pointer(int pos) {
 	return partition + (pos * BLK_SIZE);
 }
