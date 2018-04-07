@@ -55,6 +55,7 @@ void write_super(superblock s_block) {
 inode init_inode(char* name, char flags, int file_size) {
 	inode new_inode;
 	strncpy(new_inode.filename, name, strlen(name));
+	new_inode.filename[strlen(name)] = '\0'; // Add null terminator
 	new_inode.flags = flags;
 	new_inode.file_size = file_size;
 	memset(new_inode.direct_refs, 0, sizeof(int)*MAX_DREFS);
