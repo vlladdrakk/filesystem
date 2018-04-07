@@ -371,10 +371,23 @@ int mkdir(char* name, char flags) {
 	return SUCCESS;
 }
 
-	return valid_dir;
+
+int is_valid_partition_flags(char flags) {
+	return (0 <= flags && flags <= 1);
 }
 
 void* format(char* name, char flags, int num_blocks) {
+	// Check input
+	if (!(name != NULL &&
+			num_blocks >= MIN_NUM_BLOCKS &&
+			num_blocks <= MAX_NUM_BLOCKS &&
+			is_valid_partition_flags(flags))) {
+		#ifdef DEBUG
+		printf("format: Invalid parameters\n");
+		#endif
+		return NULL;
+	}
+
 	partition = malloc(num_blocks * BLK_SIZE);
 
 	inode root_node = init_inode("/", 4, 0);
