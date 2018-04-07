@@ -391,6 +391,59 @@ int mkdir(char* name, char flags) {
 	return SUCCESS;
 }
 
+int rmdir(char* name) {
+	// Check input
+	if (name == NULL) {
+		#ifdef DEBUG
+		printf("rmdir: Invalid parameters\n");
+		#endif
+		return FAILURE;
+	}
+
+	// validate path
+	int valid_dir = validate_path(name);
+
+	if (valid_dir == FAILURE)
+		return FAILURE;
+
+	// get parent node
+	inode* parent = get_parent_dir(name);
+
+	// get target directory
+	char* dir_name = get_dir_name(name);
+	inode* target_dir = get_child(parent, dir_name);
+	free(dir_name);
+
+	// Run checks on directory
+	if (!is_dir(target_dir)) {
+		#ifdef DEBUG
+		printf("rmdir: Path provided is not a directory\n");
+		#endif
+		return FAILURE; // inode isn't a directory
+	}
+
+	if (target_dir->file_size > 0) {
+		#ifdef DEBUG
+		printf("rmdir: Directory is not empty\n");
+		#endif
+		return FAILURE; // Can't delete a non-empty directory
+	}
+
+	if (target_dir->flags != D_RW) {
+		#ifdef DEBUG
+		printf("rmdir: Provided directory is read only\n");
+		#endif
+		return FAILURE; // directory is not writable
+	}
+
+	// remove directory from parent
+	int parent_pos = get_inode_pos(parent);
+	int target_pos = get_inode_pos(target_dir);
+	remove_from_directory(parent_pos, target_pos);
+	free_block(target_pos);
+
+	return SUCCESS;
+}
 
 int is_valid_partition_flags(char flags) {
 	return (0 <= flags && flags <= 1);

@@ -65,4 +65,6 @@ void* format(char* name, char flags, int num_blocks);
 
 int mkdir(char* name, char flags);
 
+int rmdir(char* name);
+
 #endif
