@@ -190,6 +190,26 @@ inode* get_child(inode* dir, char* child) {
 int mkdir(char* name, char flags) {
 	// validate path
 	char** directories = strsplit("/etc/var/etc/", "/");
+
+// Determine if inode is writable (Works for files and directories)
+int is_writable(inode* node) {	
+	return (node->flags % 3);
+}
+
+// Determine if inode is readonly (Works for files and directories)
+int is_readonly(inode* node) {
+	return !(node->flags % 3);
+}
+
+// Determine if inode is a directory
+int is_dir(inode* node) {
+	return (node->flags > 2);
+}
+
+// Determine if inode is a file
+int is_file(inode* node) {
+	return (node->flags < 2);
+}
 	inode* current_dir, *child;
 	int valid_dir = 1;
 
