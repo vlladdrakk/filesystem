@@ -171,6 +171,19 @@ inode* get_child(inode* dir, char* child) {
 			return temp;
 	}
 
+	if (dir->file_size > MAX_DREFS) {
+		// Check indirect refs
+		int* refs = get_position_pointer(dir->indirect_ref);
+		int i = 0;
+		while (refs[i] != 0) {
+			inode* temp = read_inode(refs[i]);
+			if (strcmp(temp->filename, child))
+				return temp;
+
+			i++;
+		}
+	}
+
 	return NULL;
 }
 
