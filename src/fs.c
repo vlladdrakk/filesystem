@@ -298,6 +298,22 @@ int validate_path(char* absolute_path) {
 	return SUCCESS;
 }
 
+// Gets the parent of the directory in the given path.
+// This function assumes the directory is valid.
+inode* get_parent_dir(char* absolute_path) {
+	char** path = strsplit(absolute_path, "/");
+	inode* current_dir;
+
+	current_dir = read_inode(super->root_block);
+	int i = 0;
+	while (path[i+1] != NULL) { // Loop while there is another directory
+		current_dir = get_child(current_dir, path[i]);
+		i++;
+	}
+	
+	return current_dir;
+}
+
 	// Get parent inode
 
 	// Run checks on parent
