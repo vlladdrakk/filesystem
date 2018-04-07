@@ -4,6 +4,10 @@
 #define SUCCESS 0
 #define FAILURE 1
 #define BLK_SIZE 1024
+#define MAX_DREFS 190
+#define MAX_DIRS MAX_DREFS + (BLK_SIZE/sizeof(int))
+#define MIN_NUM_BLOCKS 32
+#define MAX_NUM_BLOCKS 6048
 
 // Permission definitions
 #define F_RO 0 // File Read Only
