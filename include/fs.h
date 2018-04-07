@@ -57,14 +57,20 @@ int check_block(int pos);
 
 int alloc_block();
 
-void add_to_directory(inode* directory, int inode_pos);
+int get_inode_pos(inode* node);
 
-void remove_from_directory(int directory_pos,int inode_pos);
+int is_writable(inode* node);
+
+int is_readonly(inode* node);
+
+int is_dir(inode* node);
+
+int is_file(inode* node);
 
 void* format(char* name, char flags, int num_blocks);
 
-int mkdir(char* name, char flags);
+extern int mkdir(char* name, char flags);
 
-int rmdir(char* name);
+extern int rmdir(char* name);
 
 #endif
