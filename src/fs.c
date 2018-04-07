@@ -108,10 +108,8 @@ int alloc_block() {
 	return pos;
 }
 // TO DO : check block size limit
-void add_to_directory(int directory_pos, int inode_pos) {
-	inode* directory = read_inode(directory_pos);
-
-	if (directory->file_size < 190) {
+void add_to_directory(inode* directory, int inode_pos) {
+	if (directory->file_size < MAX_DREFS) {
 		// Use direct refs
 		directory->direct_refs[directory->file_size] = inode_pos;
 	} else {
