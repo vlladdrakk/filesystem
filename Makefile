@@ -14,3 +14,6 @@ clean:
 
 run:
 	@$(MAIN)
+
+debug:
+	gdb $(MAIN)
