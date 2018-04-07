@@ -43,6 +43,10 @@ void* get_position_pointer(int pos) {
 	return partition + (pos * BLK_SIZE);
 }
 
+int get_inode_pos(inode* node) {
+	return ((void*)node - partition) / BLK_SIZE;
+}
+
 void read_super(void* ptr) {
 	super = (superblock*)ptr;
 }
