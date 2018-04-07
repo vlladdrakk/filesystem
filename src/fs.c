@@ -259,22 +259,44 @@ int is_file(inode* node) {
 int is_valid_dir_flags(char flags) {
 	return (3 <= flags && flags <= 4);
 }
+
+// Determine if the given absolute path is valid
+int validate_path(char* absolute_path) {
+	char** path = strsplit(absolute_path, "/");
 	inode* current_dir, *child;
-	int valid_dir = 1;
 
 	current_dir = read_inode(super->root_block);
 	int i = 0;
-	while (directories[i] != NULL) {
-		// printf("%d: %s\n", i, directories[i]);
-		if ((child = get_child(current_dir, directories[i])) != NULL) {
-			printf("/%s\n", directories[i]);
-			current_dir = child;
+	while (path[i+1] != NULL) { // Loop while there is another directory
+		if ((child = get_child(current_dir, path[i])) != NULL) {
+			// Ensure the child is a directory
+			if (!is_dir(child)) {
+				#ifdef DEBUG
+				printf("mkdir: Directory is a file\n");
+				#endif
+				return FAILURE;
+			}
+
+			// check the permissions
+			if (is_writable(child)) {
+				current_dir = child;
+			} else {
+				#ifdef DEBUG
+				printf("mkdir: Reached read only directory\n");
+				#endif
+				return FAILURE;
+			}
 		} else {
-			valid_dir = 0;
-			break;
+			#ifdef DEBUG
+			printf("mkdir: Invalid directory provided\n");
+			#endif
+			return FAILURE;
 		}
 		i++;
 	}
+
+	return SUCCESS;
+}
 
 	// Get parent inode
 
