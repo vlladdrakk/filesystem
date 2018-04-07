@@ -73,4 +73,6 @@ extern int mkdir(char* name, char flags);
 
 extern int rmdir(char* name);
 
+extern void test_dirs();
+
 #endif

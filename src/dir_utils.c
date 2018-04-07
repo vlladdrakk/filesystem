@@ -318,3 +318,52 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 	}
 	directory->file_size --;
 }
+
+void test_dirs() {
+	// Need to have a partition
+	if (partition == NULL)
+		format("testing_dirs", 1, 64);
+
+	// creating directories
+	puts("Test: Creating directories in root...");
+	int etc_ret = mkdir("/etc", D_RO);
+	int var_ret = mkdir("/var", D_RW);
+	int home_ret = mkdir("/home", D_RW);
+
+	if (etc_ret == FAILURE)
+		puts("Failed to create read only directory!");
+
+	if (var_ret == FAILURE || home_ret == FAILURE)
+		puts("Failed to create writable directories!");
+
+	// Creating subdirectories
+	puts("\nTest: Creating subdirectories");
+	int conf_ret = mkdir("/etc/conf", D_RW); // this should fail because /etc is read only
+	int log_ret = mkdir("/var/log", D_RW);
+
+	if (conf_ret == SUCCESS)
+		puts("Failed! Was able to create subdirectory in read only directory.");
+
+	if (log_ret == FAILURE)
+		puts("Failed to create subdirectory!");
+
+	// removing directories
+	puts("\nTest: Removing directories");
+	
+	int rm_var = rmdir("/var"); // Should fail because it isn't empty
+	int rm_etc = rmdir("/etc"); // Should fail because it is read only
+	int rm_home = rmdir("/home"); // Should pass
+	int rm_log = rmdir("/var/log"); // Should pass
+
+	if (rm_var == SUCCESS)
+		puts("Failed! Removed non-empty directory!");
+
+	if (rm_etc == SUCCESS)
+		puts("Failed! Removed read only directory!");
+
+	if (rm_home == FAILURE)
+		puts("Failed to remove empty directory!");
+
+	if (rm_log == FAILURE)
+		puts("Failed to remove empty subdirectory!");
+}
