@@ -314,13 +314,62 @@ inode* get_parent_dir(char* absolute_path) {
 	return current_dir;
 }
 
+int mkdir(char* name, char flags) {
+	// Check input
+	if (!(name != NULL &&
+			is_valid_dir_flags(flags))) {
+		#ifdef DEBUG
+		printf("mkdir: Invalid parameters\n");
+		#endif
+		return FAILURE;
+	}
+
+	// validate path
+	int valid_dir = validate_path(name);
+
+	if (valid_dir == FAILURE)
+		return FAILURE;
+
 	// Get parent inode
+	inode* parent = get_parent_dir(name);
 
 	// Run checks on parent
+	// Check if writable
+	if (parent->flags != 4) {
+		#ifdef DEBUG
+		printf("mkdir: Parent directory not writable\n");
+		#endif
+		return FAILURE;
+	}
+
+	// Check that the directory is not full
+	if (parent->file_size == MAX_DIRS) {
+		#ifdef DEBUG
+		printf("mkdir: directory is full\n");
+		#endif
+		return FAILURE;
+	}
+
+	// Get the name of the new directory
+	char** path = strsplit(name, "/");
+	int i = 0;
+	while(path[i+1] != NULL)
+		i++;
+
+	char* dir_name = path[i];
 
 	// create directory inode
+	inode new_dir = init_inode(dir_name, flags, 0);
+	int dir_block = alloc_block();
+	write_inode(new_dir, dir_block);
 
 	// Attach new directory inode
+	add_to_directory(parent, dir_block);
+
+	print_dir(parent);
+
+	return SUCCESS;
+}
 
 	return valid_dir;
 }
