@@ -160,8 +160,9 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 
 inode* get_child(inode* dir, char* child) {
 	// Check in direct references
+	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
 	int i;
-	for (i = 0; i < dir->file_size; i++) {
+	for (i = 0; i < direct_limit; i++) {
 		if (dir->direct_refs[i] == 0)
 			break;
 
