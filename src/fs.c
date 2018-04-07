@@ -254,6 +254,11 @@ int is_dir(inode* node) {
 int is_file(inode* node) {
 	return (node->flags < 2);
 }
+
+// Check that given flags are valid for a directory
+int is_valid_dir_flags(char flags) {
+	return (3 <= flags && flags <= 4);
+}
 	inode* current_dir, *child;
 	int valid_dir = 1;
 
