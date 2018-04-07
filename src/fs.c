@@ -57,7 +57,7 @@ inode init_inode(char* name, char flags, int file_size) {
 	strncpy(new_inode.filename, name, strlen(name));
 	new_inode.flags = flags;
 	new_inode.file_size = file_size;
-	memset(new_inode.direct_refs, 0, sizeof(int)*190);
+	memset(new_inode.direct_refs, 0, sizeof(int)*MAX_DREFS);
 	new_inode.indirect_ref = 0;
 
 	return new_inode;
@@ -118,7 +118,7 @@ void add_to_directory(inode* directory, int inode_pos) {
 			directory->indirect_ref = alloc_block();
 
 		int* block = (int*)get_position_pointer(directory->indirect_ref);
-		block[directory->file_size-190] = inode_pos;
+		block[directory->file_size-MAX_DREFS] = inode_pos;
 	}
 
 	directory->file_size++;
@@ -129,7 +129,7 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 	int i;
 	int flag = 0;
 	inode* directory = read_inode(directory_pos);
-	for (i = 0; i<190 ; i++){
+	for (i = 0; i<MAX_DREFS ; i++){
 		if (directory->direct_refs[i] == inode_pos) {
 			directory->direct_refs[i] = 0;
 			free_block(inode_pos);
@@ -139,7 +139,7 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 	if (!flag && directory->indirect_ref != 0){
 		int block_index = -1;
 		int* block = (int*)get_position_pointer(directory->indirect_ref);
-		for (i = 0; i< directory->file_size - 190; i++){
+		for (i = 0; i< directory->file_size - MAX_DREFS; i++){
 			if (block[i] == inode_pos){
 				block[i] = 0;
 				free_block(inode_pos);
@@ -150,7 +150,7 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 		}
 		if (block_index >= 0){
 			// Put the last block_ref into empty block
-			block[block_index] = block[directory->file_size - 190 - 1];
+			block[block_index] = block[directory->file_size - MAX_DREFS - 1];
 		}
 
 	}
