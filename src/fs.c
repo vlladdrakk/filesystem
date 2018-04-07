@@ -187,9 +187,53 @@ inode* get_child(inode* dir, char* child) {
 	return NULL;
 }
 
-int mkdir(char* name, char flags) {
-	// validate path
-	char** directories = strsplit("/etc/var/etc/", "/");
+// Returns an array of inode pointers referencing each inode that is a
+// child of the directory
+inode** get_children(inode* dir) {
+	// Create child list
+	inode** child_list = malloc(sizeof(inode*));
+	int list_size = 0;
+
+	// Check in direct references
+	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
+	int i;
+	for (i = 0; i < direct_limit; i++) {
+		if (dir->direct_refs[i] == 0)
+			break;
+
+		// Increase list size
+		child_list = realloc(child_list, sizeof(inode*) * ++list_size);
+		child_list[list_size - 1] = read_inode(dir->direct_refs[i]);
+	}
+
+	if (dir->file_size > MAX_DREFS) {
+		// Check indirect refs
+		int* refs = get_position_pointer(dir->indirect_ref);
+		int i = 0;
+		while (refs[i] != 0) {
+			// Increase list size
+			child_list = realloc(child_list, sizeof(inode*) * ++list_size);
+			child_list[list_size - 1] = read_inode(refs[i]);
+
+			i++;
+		}
+	}
+
+	return child_list;
+}
+
+// Prints the contents of the directory in a format similar to `ls -l`
+void print_dir(inode* dir) {
+	inode** children = get_children(dir);
+	printf("Flags\tSize\tName\n");
+	int i;
+	for (i = 0; i < dir->file_size; i++) {
+		inode* child = children[i];
+		printf("%d\t%d\t%s\n", child->flags, child->file_size, child->filename);
+	}
+
+	free(children);
+}
 
 // Determine if inode is writable (Works for files and directories)
 int is_writable(inode* node) {	
