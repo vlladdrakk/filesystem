@@ -133,8 +133,6 @@ int mkdir(char* name, char flags) {
 	// Attach new directory inode
 	add_to_directory(parent, dir_block);
 
-	print_dir(parent);
-
 	return SUCCESS;
 }
 
