@@ -299,6 +299,8 @@ int validate_path(char* absolute_path) {
 		i++;
 	}
 
+	free(path); // Free the string array
+
 	return SUCCESS;
 }
 
@@ -379,6 +381,7 @@ int mkdir(char* name, char flags) {
 	inode new_dir = init_inode(dir_name, flags, 0);
 	int dir_block = alloc_block();
 	write_inode(new_dir, dir_block);
+	free(dir_name);
 
 	// Attach new directory inode
 	add_to_directory(parent, dir_block);
