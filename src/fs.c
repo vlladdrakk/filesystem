@@ -314,6 +314,24 @@ inode* get_parent_dir(char* absolute_path) {
 	return current_dir;
 }
 
+char* get_dir_name(char* absolute_path) {
+	char** path = strsplit(absolute_path, "/");
+	
+	// Loop through the string array to get to the end
+	int i = 0;
+	while(path[i+1] != NULL)
+		i++;
+
+	// Copy the directory name
+	char* copied_str = malloc(strlen(path[i]) + 1);
+	strncpy(copied_str, path[i], strlen(path[i]));
+	copied_str[strlen(path[i])+1] = '\0';
+
+	free(path); // Free the string array
+
+	return copied_str;
+}
+
 int mkdir(char* name, char flags) {
 	// Check input
 	if (!(name != NULL &&
@@ -351,12 +369,7 @@ int mkdir(char* name, char flags) {
 	}
 
 	// Get the name of the new directory
-	char** path = strsplit(name, "/");
-	int i = 0;
-	while(path[i+1] != NULL)
-		i++;
-
-	char* dir_name = path[i];
+	char* dir_name = get_dir_name(name);
 
 	// create directory inode
 	inode new_dir = init_inode(dir_name, flags, 0);
