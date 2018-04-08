@@ -59,6 +59,8 @@ extern int dump_to_disk(void* partition, char* text_file);
 
 extern void* load_from_disk(char* text_file);
 
+extern void test_disk_utils(void* partition);
+
 extern int mkdir(char* name, char flags);
 
 extern int rmdir(char* name);

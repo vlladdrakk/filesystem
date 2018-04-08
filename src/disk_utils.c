@@ -44,3 +44,30 @@ void* load_from_disk(char* text_file) {
 
 	return partition;
 }
+
+void test_disk_utils(void* partition) {
+	puts("\nTesting disk_utils...\nroot directory before dumping to disk:");
+	ls("/");
+
+	printf("Dumping partition...");
+	int ret = dump_to_disk(partition, "test_dump");
+
+	if (ret == FAILURE)
+	puts("Failed!");
+	else
+	puts("Success!");
+
+	free(partition);
+	printf("Loading partition...");
+	partition = load_from_disk("test_dump");
+
+	if (partition == NULL)
+	puts("Failed!");
+	else
+	puts("Success!");
+
+	super = (superblock*)partition;
+
+	puts("root directory after loading from disk:");
+	ls("/");
+}
