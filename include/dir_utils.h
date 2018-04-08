@@ -11,9 +11,9 @@ char* get_dir_name(char* absolute_path);
 
 int ls(char* path);
 
-void remove_from_directory(inode* directory,int inode_pos);
+int remove_from_directory(inode* directory,int inode_pos);
 
-void add_to_directory(inode* directory, int inode_pos);
+int add_to_directory(inode* directory, int inode_pos);
 
 int mkdir(char* name, char flags);
 

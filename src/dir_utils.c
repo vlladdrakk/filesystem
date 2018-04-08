@@ -304,24 +304,33 @@ char* get_dir_name(char* absolute_path) {
 	return copied_str;
 }
 
-// TO DO : check block size limit
-void add_to_directory(inode* directory, int inode_pos) {
+int add_to_directory(inode* directory, int inode_pos) {
 	if (directory->file_size < MAX_DREFS) {
 		// Use direct refs
 		directory->direct_refs[directory->file_size] = inode_pos;
 	} else {
 		// Use indirect references
-		if (directory->indirect_ref == 0)
+		if (directory->indirect_ref == 0) {
 			directory->indirect_ref = alloc_block();
+
+			if (directory->indirect_ref == -1)
+				return FAILURE;
+		}
 
 		int* block = (int*)get_position_pointer(directory->indirect_ref);
 		block[directory->file_size-MAX_DREFS] = inode_pos;
 	}
 
 	directory->file_size++;
+
+	return SUCCESS;
 }
 
-void remove_from_directory(inode* directory, int inode_pos) {
+int remove_from_directory(inode* directory, int inode_pos) {
+	// Check that inode_pos is reserved
+	if (check_block(inode_pos) == 0)
+		return FAILURE; // shouldn't add an unreserved block
+
 	// find reference to inode
 	int i;
 	int flag = 0;
@@ -351,6 +360,8 @@ void remove_from_directory(inode* directory, int inode_pos) {
 
 	}
 	directory->file_size --;
+
+	return SUCCESS;
 }
 
 void test_dirs() {
