@@ -211,10 +211,8 @@ int rmdir(char* name) {
 	}
 
 	// remove directory from parent
-	int parent_pos = get_inode_pos(parent);
 	int target_pos = get_inode_pos(target_dir);
-	remove_from_directory(parent_pos, target_pos);
-	free_block(target_pos);
+	remove_from_directory(parent, target_pos);
 
 	return SUCCESS;
 }
@@ -306,28 +304,36 @@ char* get_dir_name(char* absolute_path) {
 	return copied_str;
 }
 
-// TO DO : check block size limit
-void add_to_directory(inode* directory, int inode_pos) {
+int add_to_directory(inode* directory, int inode_pos) {
 	if (directory->file_size < MAX_DREFS) {
 		// Use direct refs
 		directory->direct_refs[directory->file_size] = inode_pos;
 	} else {
 		// Use indirect references
-		if (directory->indirect_ref == 0)
+		if (directory->indirect_ref == 0) {
 			directory->indirect_ref = alloc_block();
+
+			if (directory->indirect_ref == -1)
+				return FAILURE;
+		}
 
 		int* block = (int*)get_position_pointer(directory->indirect_ref);
 		block[directory->file_size-MAX_DREFS] = inode_pos;
 	}
 
 	directory->file_size++;
+
+	return SUCCESS;
 }
 
-void remove_from_directory(int directory_pos,int inode_pos) {
+int remove_from_directory(inode* directory, int inode_pos) {
+	// Check that inode_pos is reserved
+	if (check_block(inode_pos) == 0)
+		return FAILURE; // shouldn't add an unreserved block
+
 	// find reference to inode
 	int i;
 	int flag = 0;
-	inode* directory = read_inode(directory_pos);
 	for (i = 0; i<MAX_DREFS ; i++){
 		if (directory->direct_refs[i] == inode_pos) {
 			directory->direct_refs[i] = 0;
@@ -354,6 +360,8 @@ void remove_from_directory(int directory_pos,int inode_pos) {
 
 	}
 	directory->file_size --;
+
+	return SUCCESS;
 }
 
 void test_dirs() {
@@ -362,30 +370,32 @@ void test_dirs() {
 		format("testing_dirs", 1, 64);
 
 	// creating directories
-	puts("Test: Creating directories in root...");
+	printf("Test: Creating directories in root...");
 	int etc_ret = mkdir("/etc", D_RO);
 	int var_ret = mkdir("/var", D_RW);
 	int home_ret = mkdir("/home", D_RW);
 
 	if (etc_ret == FAILURE)
 		puts("Failed to create read only directory!");
-
-	if (var_ret == FAILURE || home_ret == FAILURE)
+	else if (var_ret == FAILURE || home_ret == FAILURE)
 		puts("Failed to create writable directories!");
+	else
+		puts("Success!");
 
 	// Creating subdirectories
-	puts("\nTest: Creating subdirectories");
+	printf("\nTest: Creating subdirectories...");
 	int conf_ret = mkdir("/etc/conf", D_RW); // this should fail because /etc is read only
 	int log_ret = mkdir("/var/log", D_RW);
 
 	if (conf_ret == SUCCESS)
 		puts("Failed! Was able to create subdirectory in read only directory.");
-
-	if (log_ret == FAILURE)
+	else if (log_ret == FAILURE)
 		puts("Failed to create subdirectory!");
+	else
+		puts("Success!");
 
 	// removing directories
-	puts("\nTest: Removing directories");
+	printf("\nTest: Removing directories...");
 	
 	int rm_var = rmdir("/var"); // Should fail because it isn't empty
 	int rm_etc = rmdir("/etc"); // Should fail because it is read only
@@ -394,15 +404,14 @@ void test_dirs() {
 
 	if (rm_var == SUCCESS)
 		puts("Failed! Removed non-empty directory!");
-
-	if (rm_etc == SUCCESS)
+	else if (rm_etc == SUCCESS)
 		puts("Failed! Removed read only directory!");
-
-	if (rm_home == FAILURE)
+	else if (rm_home == FAILURE)
 		puts("Failed to remove empty directory!");
-
-	if (rm_log == FAILURE)
+	else if (rm_log == FAILURE)
 		puts("Failed to remove empty subdirectory!");
+	else
+		puts("Success!");
 
 	// filling directory
 	printf("\nTest: Filling directory...");
