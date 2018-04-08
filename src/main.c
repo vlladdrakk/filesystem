@@ -6,7 +6,7 @@ extern superblock* super;
 extern void* partition;
 
 int main() {
-  format("p1", 1, 64);
+  format("p1", 1, 1024);
   test_dirs();
   test_disk_utils(partition);
 

@@ -20,7 +20,7 @@ void print_superblock(superblock sblock) {
 }
 
 void print_partition() {
-	int x = 15;
+	int x = 30;
 	int y = (super->num_blocks / x) + 1;
 	int pos = 0;
 	puts("Block Map:");

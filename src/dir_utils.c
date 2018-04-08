@@ -148,6 +148,14 @@ int mkdir(char* name, char flags) {
 	// create directory inode
 	inode new_dir = init_inode(dir_name, flags, 0);
 	int dir_block = alloc_block();
+
+	if (dir_block == -1) {
+		#ifdef DEBUG
+		printf("mkdir: Cannot allocate a block\n");
+		#endif
+		return FAILURE;
+	}
+
 	write_inode(new_dir, dir_block);
 	free(dir_name);
 
@@ -395,4 +403,34 @@ void test_dirs() {
 
 	if (rm_log == FAILURE)
 		puts("Failed to remove empty subdirectory!");
+
+	// filling directory
+	printf("Test: Filling directory...");
+
+	int num_dirs = MAX_DIRS;
+	char* dir_name = malloc(sizeof(char)*11);
+	strcpy(dir_name, "/test/dir0");
+	mkdir("/test", D_RW); // Create a directory to fill
+
+	// Fill the /test directory with junk directories
+	int i;
+	for (i = 0; i < num_dirs; i++) {
+		dir_name[9] = i;
+		int test_ret = mkdir(dir_name, D_RO);
+
+		if (test_ret == FAILURE) {
+			puts("Failed!");
+			break;
+		}
+	}
+
+	// Make sure the directory is full
+	inode* test_dir = get_parent_dir(dir_name);
+	int full_ret = mkdir("/test/testing", D_RO); // This should fail because the directory is full
+
+	if (num_dirs == test_dir->file_size && full_ret == FAILURE)
+		puts("Success!");
+	else {
+		puts("Failed!");
+	}
 }
