@@ -291,7 +291,7 @@ char* get_dir_name(char* absolute_path) {
 	// Copy the directory name
 	char* copied_str = malloc(strlen(path[i]) + 1);
 	strncpy(copied_str, path[i], strlen(path[i]));
-	copied_str[strlen(path[i])+1] = '\0';
+	copied_str[strlen(path[i])] = '\0';
 
 	free(path); // Free the string array
 
