@@ -56,7 +56,28 @@ void print_dir(inode* dir) {
 	free(children);
 }
 
+int ls(char* path) {
+	// validate path
+	int valid_dir = validate_path(path);
+
+	if (valid_dir == FAILURE)
+		return FAILURE;
+
+	// Get parent inode
+	inode* parent = get_parent_dir(path);
+
+	print_dir(parent);
+
+	return SUCCESS;
+}
+
 inode* get_child(inode* dir, char* child) {
+	if (dir->file_size == 0)
+		return NULL;
+
+	if (child == NULL)
+		return NULL;
+
 	// Check in direct references
 	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
 	int i;
@@ -200,6 +221,10 @@ int validate_path(char* absolute_path) {
 	char** path = strsplit(absolute_path, "/");
 	inode* current_dir, *child;
 
+	// Return success for root directory
+	if (path[0] == NULL)
+		return SUCCESS;
+
 	current_dir = read_inode(super->root_block);
 	int i = 0;
 	while (path[i+1] != NULL) { // Loop while there is another directory
@@ -241,6 +266,10 @@ inode* get_parent_dir(char* absolute_path) {
 	char** path = strsplit(absolute_path, "/");
 	inode* current_dir;
 
+	// Handle getting root directory
+	if (path[0] == NULL)
+		return read_inode(super->root_block);
+
 	current_dir = read_inode(super->root_block);
 	int i = 0;
 	while (path[i+1] != NULL) { // Loop while there is another directory
@@ -262,7 +291,7 @@ char* get_dir_name(char* absolute_path) {
 	// Copy the directory name
 	char* copied_str = malloc(strlen(path[i]) + 1);
 	strncpy(copied_str, path[i], strlen(path[i]));
-	copied_str[strlen(path[i])+1] = '\0';
+	copied_str[strlen(path[i])] = '\0';
 
 	free(path); // Free the string array
 

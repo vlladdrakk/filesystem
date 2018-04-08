@@ -9,6 +9,8 @@ inode* get_parent_dir(char* absolute_path);
 
 char* get_dir_name(char* absolute_path);
 
+int ls(char* path);
+
 void remove_from_directory(int directory_pos,int inode_pos);
 
 void add_to_directory(inode* directory, int inode_pos);

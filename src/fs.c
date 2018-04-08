@@ -156,6 +156,7 @@ void* format(char* name, char flags, int num_blocks) {
 
 	superblock new_superblock;
 	strncpy(new_superblock.name, name, strlen(name));
+	new_superblock.name[strlen(name)] = '\0';
 	new_superblock.flags = flags;
 	new_superblock.num_blocks = num_blocks;
 	new_superblock.root_block = 1;

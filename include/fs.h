@@ -1,20 +1,6 @@
 #ifndef FS_H
 #define FS_H
 
-#define SUCCESS 0
-#define FAILURE 1
-#define BLK_SIZE 1024
-#define MAX_DREFS 190
-#define MAX_DIRS MAX_DREFS + (BLK_SIZE/sizeof(int))
-#define MIN_NUM_BLOCKS 32
-#define MAX_NUM_BLOCKS 6048
-
-// Permission definitions
-#define F_RO 0 // File Read Only
-#define F_RW 1 // File Read Write
-#define D_RO 3 // Directory Read Only
-#define D_RW 4 // Directory Read Write
-
 typedef struct {
 	char name[255];
 	char flags; /* 0 – read; 1 – write */
@@ -78,5 +64,7 @@ extern int mkdir(char* name, char flags);
 extern int rmdir(char* name);
 
 extern void test_dirs();
+
+extern int ls(char* path);
 
 #endif
