@@ -61,4 +61,6 @@ extern int rmdir(char* name);
 
 extern void test_dirs();
 
+extern int ls(char* path);
+
 #endif

@@ -56,6 +56,21 @@ void print_dir(inode* dir) {
 	free(children);
 }
 
+int ls(char* path) {
+	// validate path
+	int valid_dir = validate_path(path);
+
+	if (valid_dir == FAILURE)
+		return FAILURE;
+
+	// Get parent inode
+	inode* parent = get_parent_dir(path);
+
+	print_dir(parent);
+
+	return SUCCESS;
+}
+
 inode* get_child(inode* dir, char* child) {
 	// Check in direct references
 	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
