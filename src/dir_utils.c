@@ -72,6 +72,12 @@ int ls(char* path) {
 }
 
 inode* get_child(inode* dir, char* child) {
+	if (dir->file_size == 0)
+		return NULL;
+
+	if (child == NULL)
+		return NULL;
+
 	// Check in direct references
 	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
 	int i;
@@ -215,6 +221,10 @@ int validate_path(char* absolute_path) {
 	char** path = strsplit(absolute_path, "/");
 	inode* current_dir, *child;
 
+	// Return success for root directory
+	if (path[0] == NULL)
+		return SUCCESS;
+
 	current_dir = read_inode(super->root_block);
 	int i = 0;
 	while (path[i+1] != NULL) { // Loop while there is another directory
@@ -255,6 +265,10 @@ int validate_path(char* absolute_path) {
 inode* get_parent_dir(char* absolute_path) {
 	char** path = strsplit(absolute_path, "/");
 	inode* current_dir;
+
+	// Handle getting root directory
+	if (path[0] == NULL)
+		return read_inode(super->root_block);
 
 	current_dir = read_inode(super->root_block);
 	int i = 0;
