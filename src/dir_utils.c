@@ -405,7 +405,7 @@ void test_dirs() {
 		puts("Failed to remove empty subdirectory!");
 
 	// filling directory
-	printf("Test: Filling directory...");
+	printf("\nTest: Filling directory...");
 
 	int num_dirs = MAX_DIRS;
 	char* dir_name = malloc(sizeof(char)*11);
