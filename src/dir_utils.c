@@ -359,30 +359,32 @@ void test_dirs() {
 		format("testing_dirs", 1, 64);
 
 	// creating directories
-	puts("Test: Creating directories in root...");
+	printf("Test: Creating directories in root...");
 	int etc_ret = mkdir("/etc", D_RO);
 	int var_ret = mkdir("/var", D_RW);
 	int home_ret = mkdir("/home", D_RW);
 
 	if (etc_ret == FAILURE)
 		puts("Failed to create read only directory!");
-
-	if (var_ret == FAILURE || home_ret == FAILURE)
+	else if (var_ret == FAILURE || home_ret == FAILURE)
 		puts("Failed to create writable directories!");
+	else
+		puts("Success!");
 
 	// Creating subdirectories
-	puts("\nTest: Creating subdirectories");
+	printf("\nTest: Creating subdirectories...");
 	int conf_ret = mkdir("/etc/conf", D_RW); // this should fail because /etc is read only
 	int log_ret = mkdir("/var/log", D_RW);
 
 	if (conf_ret == SUCCESS)
 		puts("Failed! Was able to create subdirectory in read only directory.");
-
-	if (log_ret == FAILURE)
+	else if (log_ret == FAILURE)
 		puts("Failed to create subdirectory!");
+	else
+		puts("Success!");
 
 	// removing directories
-	puts("\nTest: Removing directories");
+	printf("\nTest: Removing directories...");
 	
 	int rm_var = rmdir("/var"); // Should fail because it isn't empty
 	int rm_etc = rmdir("/etc"); // Should fail because it is read only
@@ -391,15 +393,14 @@ void test_dirs() {
 
 	if (rm_var == SUCCESS)
 		puts("Failed! Removed non-empty directory!");
-
-	if (rm_etc == SUCCESS)
+	else if (rm_etc == SUCCESS)
 		puts("Failed! Removed read only directory!");
-
-	if (rm_home == FAILURE)
+	else if (rm_home == FAILURE)
 		puts("Failed to remove empty directory!");
-
-	if (rm_log == FAILURE)
+	else if (rm_log == FAILURE)
 		puts("Failed to remove empty subdirectory!");
+	else
+		puts("Success!");
 
 	// filling directory
 	printf("\nTest: Filling directory...");
