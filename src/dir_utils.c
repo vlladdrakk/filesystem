@@ -148,6 +148,14 @@ int mkdir(char* name, char flags) {
 	// create directory inode
 	inode new_dir = init_inode(dir_name, flags, 0);
 	int dir_block = alloc_block();
+
+	if (dir_block == -1) {
+		#ifdef DEBUG
+		printf("mkdir: Cannot allocate a block\n");
+		#endif
+		return FAILURE;
+	}
+
 	write_inode(new_dir, dir_block);
 	free(dir_name);
 
