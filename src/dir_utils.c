@@ -211,10 +211,8 @@ int rmdir(char* name) {
 	}
 
 	// remove directory from parent
-	int parent_pos = get_inode_pos(parent);
 	int target_pos = get_inode_pos(target_dir);
-	remove_from_directory(parent_pos, target_pos);
-	free_block(target_pos);
+	remove_from_directory(parent, target_pos);
 
 	return SUCCESS;
 }
@@ -323,11 +321,10 @@ void add_to_directory(inode* directory, int inode_pos) {
 	directory->file_size++;
 }
 
-void remove_from_directory(int directory_pos,int inode_pos) {
+void remove_from_directory(inode* directory, int inode_pos) {
 	// find reference to inode
 	int i;
 	int flag = 0;
-	inode* directory = read_inode(directory_pos);
 	for (i = 0; i<MAX_DREFS ; i++){
 		if (directory->direct_refs[i] == inode_pos) {
 			directory->direct_refs[i] = 0;
