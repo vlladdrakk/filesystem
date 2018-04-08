@@ -56,4 +56,11 @@ void remove_from_directory(int directory_pos,int inode_pos);
 
 void* format(char* name, char flags, int num_blocks);
 
+int find_node(char** name, int size);
+
+int copy_file(char* name, char flags, char* local_file);
+
+int remove_file(char* name);
+
+int print_file(char* name);
 #endif

@@ -58,7 +58,7 @@ int main() {
   // }
   printf("Copying first file.\n\n");  
   copy_file("/dev/new_file",1,"files/local_file_1.txt");
-  print_file("/dev/new_file");
+  //print_file("/dev/new_file");
   
   printf("Copying second file.\n\n");
   copy_file("/dev/sub_dir/new_file2",1,"files/local_file_1.txt");
