@@ -4,6 +4,7 @@
 #define SUCCESS 0
 #define FAILURE 1
 #define BLK_SIZE 1024
+#define MAX_DIR 1024
 
 typedef struct {
 	char name[255];
@@ -20,6 +21,10 @@ typedef struct {
 	int direct_refs[190]; /* direct references */
 	int indirect_ref; /* indirect reference */
 } inode;
+
+typedef struct{
+	char data[BLK_SIZE];
+} block;
 
 void print_block(int* block);
 
