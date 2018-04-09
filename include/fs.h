@@ -30,6 +30,8 @@ void print_block(int* block);
 
 void print_superblock(superblock sblock);
 
+void print_partition();
+
 void* get_position_pointer(int pos);
 
 void read_super(void* ptr);
@@ -46,21 +48,34 @@ void reserve_block(int pos);
 
 void free_block(int pos);
 
-int get_bit(int pos);
+int check_block(int pos);
 
 int alloc_block();
 
-void add_to_directory(int directory_pos, int inode_pos);
+int get_inode_pos(inode* node);
 
-void remove_from_directory(int directory_pos,int inode_pos);
+int is_writable(inode* node);
+
+int is_readonly(inode* node);
+
+int is_dir(inode* node);
+
+int is_file(inode* node);
 
 void* format(char* name, char flags, int num_blocks);
 
-int find_node(char** name, int size);
+extern int dump_to_disk(void* partition, char* text_file);
 
-int copy_file(char* name, char flags, char* local_file);
+extern void* load_from_disk(char* text_file);
 
-int remove_file(char* name);
+extern void test_disk_utils(void* partition);
 
-int print_file(char* name);
+extern int mkdir(char* name, char flags);
+
+extern int rmdir(char* name);
+
+extern void test_dirs();
+
+extern int ls(char* path);
+
 #endif

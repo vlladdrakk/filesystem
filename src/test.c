@@ -1,27 +1,29 @@
-#include "fs.h";
+#include "test.h"
+#include "dir_utils.h"
+#include "file.h"
+#include <stdio.h>
 
 extern superblock* super;
 extern void* partition;
-
 void test_files(){
   int i,pos;
   // make a directory
   inode dir = init_inode("dev",4,0);
   pos = alloc_block();
   write_inode(dir,pos);
-  add_to_directory(super->root_block,pos);
+  add_to_directory(read_inode(super->root_block),pos);
   printf("dev directory position = %d\n", pos);
   dir = init_inode("sub_dir",4,0);
   int pos2 = alloc_block();
   write_inode(dir, pos2);
-  add_to_directory(pos,pos2);
+  add_to_directory(read_inode(pos),pos2);
   printf("sub_dir directory position = %d\n", pos2);
   for (i=0; i<7; i++) {
     inode n = init_inode("test"+i, 1, 10);
     pos = alloc_block();
     write_inode(n, pos);
     printf("adding %d to dir.\n",pos);
-    add_to_directory(super->root_block, pos);
+    add_to_directory(read_inode(super->root_block), pos);
   }
 
   print_superblock(*super);

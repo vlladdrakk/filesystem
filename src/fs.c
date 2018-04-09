@@ -1,7 +1,8 @@
-#include "fs.h"
-#include "string.h"
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "common.h"
+#include "fs.h"
 
 superblock* super;
 void* partition;
@@ -18,11 +19,36 @@ void print_superblock(superblock sblock) {
 		sblock.name, sblock.flags, sblock.root_block, sblock.num_free_blocks, sblock.block_map[1],sblock.block_map[0]);
 }
 void print_node( inode node){
-	printf("name: %s\nflags: %d\nfile_size: %d\ndirect_refs: %d\nindirect_refs %d-%d\n",
+	printf("name: %s\nflags: %d\nfile_size: %d\ndirect_refs: %n\nindirect_refs %d\n",
 		node.filename, node.flags, node.file_size, node.direct_refs, node.indirect_ref);	
 }
+
+void print_partition() {
+	int x = 30;
+	int y = (super->num_blocks / x) + 1;
+	int pos = 0;
+	puts("Block Map:");
+
+	int i, j;
+	for (i = 0; i < y; i++) {
+		for (j = 0; j < x; j++) {
+			if (pos > super->num_blocks)
+				printf("x ");
+			else
+				printf("%d ", check_block(pos));
+
+			pos++;
+		}
+		printf("\n");
+	}
+}
+
 void* get_position_pointer(int pos) {
 	return partition + (pos * BLK_SIZE);
+}
+
+int get_inode_pos(inode* node) {
+	return ((void*)node - partition) / BLK_SIZE;
 }
 
 void read_super(void* ptr) {
@@ -37,9 +63,10 @@ void write_super(superblock s_block) {
 inode init_inode(char* name, char flags, int file_size) {
 	inode new_inode;
 	strncpy(new_inode.filename, name, strlen(name));
+	new_inode.filename[strlen(name)] = '\0'; // Add null terminator
 	new_inode.flags = flags;
 	new_inode.file_size = file_size;
-	memset(new_inode.direct_refs, 0, sizeof(int)*190);
+	memset(new_inode.direct_refs, 0, sizeof(int)*MAX_DREFS);
 	new_inode.indirect_ref = 0;
 
 	return new_inode;
@@ -55,6 +82,11 @@ inode* read_inode(int pos) {
 }
 
 void reserve_block(int pos) {
+	if (super != NULL && check_block(pos) == 1) {
+		printf("Error! Attempting to reserve a reserved block: %d\n", pos);
+		exit(1);
+	}
+
 	super->block_map[pos/8] |= 1 << pos % 8;
 	super->num_free_blocks--;
 }
@@ -64,7 +96,7 @@ void free_block(int pos) {
 	super->num_free_blocks++;
 }
 
-int get_bit(int pos) {
+int check_block(int pos) {
 	return (super->block_map[pos/8] >> pos % 8) & 1;
 }
 
@@ -73,7 +105,7 @@ int alloc_block() {
 	// Find free block
 	int i;
 	for (i = 0; i < super->num_blocks; i++) {
-		if (get_bit(i) == 0) {
+		if (check_block(i) == 0) {
 			pos = i;
 			break;
 		}
@@ -84,58 +116,43 @@ int alloc_block() {
 
 	return pos;
 }
-// TO DO : check block size limit 
-void add_to_directory(int directory_pos, int inode_pos) {
-	inode* directory = read_inode(directory_pos);
 
-	if (directory->file_size < 190) {
-		// Use direct refs
-		directory->direct_refs[directory->file_size] = inode_pos;
-	} else {
-		// Use indirect references
-		if (directory->indirect_ref == 0)
-			directory->indirect_ref = alloc_block();
-
-		int* block = (int*)get_position_pointer(directory->indirect_ref);
-		block[directory->file_size-190] = inode_pos;
-	}
-
-	directory->file_size++;
+// Determine if inode is writable (Works for files and directories)
+int is_writable(inode* node) {	
+	return (node->flags % 3);
 }
 
-void remove_from_directory(int directory_pos,int inode_pos) {
-	// find reference to inode
-	int i;
-	int flag = 0;
-	inode* directory = read_inode(directory_pos);
-	for (i = 0; i<190 ; i++){
-		if (directory->direct_refs[i] == inode_pos) {
-			directory->direct_refs[i] = 0;
-			free_block(inode_pos);
-			flag = 1;
-		}
-	}
-	if (!flag && directory->indirect_ref != 0){
-		int block_index = -1;
-		int* block = (int*)get_position_pointer(directory->indirect_ref);
-		for (i = 0; i< directory->file_size - 190; i++){
-			if (block[i] == inode_pos){
-				block[i] = 0;
-				free_block(inode_pos);
-				block_index = i;
-				// free whole block if no indirect_ref?
-
-			}
-		}
-		if (block_index >= 0){
-			// Put the last block_ref into empty block
-			block[block_index] = block[directory->file_size - 190 - 1];
-		}
-
-	}
-	directory->file_size --;
+// Determine if inode is readonly (Works for files and directories)
+int is_readonly(inode* node) {
+	return !(node->flags % 3);
 }
+
+// Determine if inode is a directory
+int is_dir(inode* node) {
+	return (node->flags > 2);
+}
+
+// Determine if inode is a file
+int is_file(inode* node) {
+	return (node->flags < 2);
+}
+
+int is_valid_partition_flags(char flags) {
+	return (0 <= flags && flags <= 1);
+}
+
 void* format(char* name, char flags, int num_blocks) {
+	// Check input
+	if (!(name != NULL &&
+			num_blocks >= MIN_NUM_BLOCKS &&
+			num_blocks <= MAX_NUM_BLOCKS &&
+			is_valid_partition_flags(flags))) {
+		#ifdef DEBUG
+		printf("format: Invalid parameters\n");
+		#endif
+		return NULL;
+	}
+
 	partition = malloc(num_blocks * BLK_SIZE);
 
 	inode root_node = init_inode("/", 4, 0);
@@ -143,168 +160,19 @@ void* format(char* name, char flags, int num_blocks) {
 
 	superblock new_superblock;
 	strncpy(new_superblock.name, name, strlen(name));
+	new_superblock.name[strlen(name)] = '\0';
 	new_superblock.flags = flags;
 	new_superblock.num_blocks = num_blocks;
-	new_superblock.root_block = 1; 
+	new_superblock.root_block = 1;
 	new_superblock.num_free_blocks = num_blocks;
 	memset(new_superblock.block_map, 0, sizeof(char)*756);
 	write_super(new_superblock);
 	reserve_block(0);
 	reserve_block(1);
 
-	printf("%d\n", super->block_map[0]);
-	print_superblock(*super);
+	// printf("%d\n", super->block_map[0]);
+	// print_superblock(*super);
 
 	return partition;
 }
-// returns node position
-int find_node(char** name, int size){
-	int pos = 0;
-	int i = 0;
-	int j = 0;
-    inode* current_dir = read_inode(super->root_block);
-    for (i = 0; i < size /*- 1*/ ; i++){
-    	if (current_dir->flags == 4 ||  current_dir->flags == 3){ 
-    		for(j=0; j < current_dir->file_size; j++){
-    			//printf("reading inode from direct_ref %d\n",j);
-    			inode * tmp = read_inode(current_dir->direct_refs[j]);
-    			//printf("tmp->filename = %s, name[i] is %s\n",tmp->filename,name[i]);
-    			if (/*tmp->flags == 4 && */strcmp(name[i],tmp->filename) == 0){
-    				pos = current_dir->direct_refs[j];
-    				current_dir = read_inode(pos);
-    				break;
-    			}
-    		}	
-    	}
-    }
-	return pos;
-}
 
-int copy_file(char* name, char flags, char* local_file){
-	int num_blocks;
-	FILE* fp = fopen(local_file,"r");
-	if( fp == 0){
-		printf("Could Not Open The File.\n");
-		exit(1);
-	}
-	// Create new node for file
-	fseek(fp, 0, SEEK_END);
-	int sz = ftell(fp);
-    rewind(fp);
-	//char** arr = strsplit(name,"/");
-	char* arr[MAX_DIR];
-    size_t size = str_split(name, arr, "/");
-	char* file_name = arr[size - 1];
-	inode new_node = init_inode(file_name,flags,sz);
-    int node_pos = alloc_block();
-    // TO DO if filesize < size of refs ==> do not create data block
-	// Create data block
-	// Copy data to data block
-    num_blocks = sz / BLK_SIZE + 1;
-    if ( super->num_free_blocks < num_blocks ){
-    	return FAILURE;
-    }
-	int i = 0;
-    for ( i = 0 ; i < num_blocks ; i++){
-    	int blk_pos = alloc_block();
-    	// Add data block to inode
-    	if ( i < 190){ // Add to direct_refs
-    		new_node.direct_refs[i] = blk_pos;
-    	}else{ // Add to indirect_refs
-    		if (new_node.indirect_ref  == 0)
-    			new_node.indirect_ref = alloc_block();
-    		int* block = (int*)get_position_pointer(new_node.indirect_ref);
-			block[i-190] = blk_pos;
-
-    	}
-    	int cp_sz = BLK_SIZE;
-    	if (BLK_SIZE * (i+1) > sz){
-    		// copy the remaining amount, not whole block
-    		cp_sz = sz % BLK_SIZE;
-    	}
-    	//printf("block position = %d\n",blk_pos);
-    	block* ptr = (block*)get_position_pointer(blk_pos);
-		int j = 0;
-    	for ( j = 0; j < cp_sz ; j++){
-    		ptr->data[j] = fgetc(fp);
-    	}
-    }	
-	    	
-    //}
-    write_inode(new_node, node_pos);
-    int dir_pos = find_node(arr,size);
-    fclose(fp);
-	// Add node to directory
-    add_to_directory(dir_pos, node_pos);
-
-    return SUCCESS;
-}
-int print_file(char* name){
-	//printf("\n\nprinting file %s\n",name);
-	int n_chars = 0;
-	// Search for file
-	char* arr[MAX_DIR];
-    size_t size = str_split(name, arr, "/");
-    int node_pos = find_node(arr,size);
-    if (node_pos == 0){
-    	return FAILURE;
-    }
-    inode* node = read_inode(node_pos);
-    int i = 0;
-    int j = 0;
-	int blk_pos = 0;
-    int num_blocks = node->file_size / BLK_SIZE + 1;
-    
-	// read from blocks
-	for ( i = 0 ; i < num_blocks ; i++){
-    	if ( i < 190){ // Read from direct blocks
-    		blk_pos = node->direct_refs[i];
-    	}else{
-    		int* block = (int*)get_position_pointer(node->indirect_ref);
-			blk_pos = block[i-190];
-    	}
-    	int cp_sz = BLK_SIZE;
-    	if (BLK_SIZE * (i+1) > node->file_size){ // print the remaining amount, not whole block
-    		cp_sz = node->file_size % BLK_SIZE;
-    	}
-    	block* ptr = (block*)get_position_pointer(blk_pos);
-    	for ( j = 0; j < cp_sz ; j++){
-    		printf("%c",ptr->data[j]);
-    		n_chars++;
-    	}
-    }
-    //}
-    
-	return n_chars;
-}
-
-int remove_file(char* name){
-	char* arr[MAX_DIR];
-    size_t size = str_split(name, arr, "/");
-    int node_pos = find_node(arr,size);
-    if (node_pos == 0){
-    	return FAILURE;
-    }
-    inode* node = read_inode(node_pos);
-    int i = 0;
-    int j = 0;
-	int blk_pos = 0;
-    int num_blocks = node->file_size / BLK_SIZE + 1;
-    for ( i = 0 ; i < num_blocks ; i++){
-    	if ( i < 190){ 
-    		blk_pos = node->direct_refs[i];
-    	}else{
-    		int* block = (int*)get_position_pointer(node->indirect_ref);
-			blk_pos = block[i-190];
-    	}
-    	int cp_sz = BLK_SIZE;
-    	if (BLK_SIZE * (i+1) > node->file_size){ 
-    		cp_sz = node->file_size % BLK_SIZE;
-    	}
-    	free_block(blk_pos);
-    }
-    int dir_pos = find_node(arr,size-1);
-    remove_from_directory(dir_pos,node_pos);
-    free_block(node_pos);
-    return SUCCESS;
-}

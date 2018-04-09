@@ -15,7 +15,9 @@ char** strsplit(char* str, const char* delimiter) {
   string_list[count] = strtok(string, delimiter);
   while (string_list[count] != NULL)
   {
-    string_list = realloc(string_list, sizeof(char*) * (++count));
+
+    count++;
+    string_list = realloc(string_list, sizeof(char*) * count);
 
     if (string_list == NULL) {
       printf("Error! failed to allocate memory\n");
@@ -66,3 +68,4 @@ int str_split (const char *str, char *parts[], const char *delimiter) {
     free(parts[j]);
   return -1;
 }
+
