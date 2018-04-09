@@ -175,12 +175,7 @@ int find_node(char** name, int size){
     				break;
     			}
     		}	
-    	}/*else{ //its a file
-			if (strcmp(name[i],current_dir->filename) == 0){
-				//printf("find_node:its a file\n");
-				break;
-			}
-    	}*/
+    	}
     }
 	return pos;
 }
@@ -203,20 +198,6 @@ int copy_file(char* name, char flags, char* local_file){
 	inode new_node = init_inode(file_name,flags,sz);
     int node_pos = alloc_block();
     // TO DO if filesize < size of refs ==> do not create data block
-   //  if ( sz < 190 ) {
-   //  	printf("sz < 190. writing to direct refs\n");
-   //  	for( i = 0; i < sz; i++)
-   //  		new_node.direct_refs[i] = fgetc(fp);
-   //  } else if ( sz < 190 + BLK_SIZE){
-   //  	if (new_node.indirect_ref  == 0){
-			// new_node.indirect_ref = alloc_block();
-			// block* ptr = (block*)get_position_pointer(new_node.indirect_ref);
-			// for ( j = 0; j < sz ; j++){
-	  //   		ptr->data[j] = fgetc(fp);
-	  //   	}
-   //  	}
-   //  }
-   //  else{
 	// Create data block
 	// Copy data to data block
     num_blocks = sz / BLK_SIZE + 1;
@@ -273,17 +254,7 @@ int print_file(char* name){
     int j = 0;
 	int blk_pos = 0;
     int num_blocks = node->file_size / BLK_SIZE + 1;
-    /*if(node->file_size < 190 ){
-    	// read from direct refs
-    	printf("node->file_size < 190. reading from direct refs\n");
-    	for(i = 0; i < node->file_size; i++){
-    		printf("%d",i);
-    		printf("%c",node->direct_refs[i]);
-    	}
-
-    } else if( node->file_size < 190 + BLK_SIZE){
-    	// read from indirect refs
-    }else{*/
+    
 	// read from blocks
 	for ( i = 0 ; i < num_blocks ; i++){
     	if ( i < 190){ // Read from direct blocks
