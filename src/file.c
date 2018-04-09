@@ -15,14 +15,14 @@ int find_node(char** name, int size){
     for (i = 0; i < size /*- 1*/ ; i++){
     	if (current_dir->flags == 4 ||  current_dir->flags == 3){ 
     		for(j=0; j < current_dir->file_size; j++){
-    			//printf("reading inode from direct_ref %d\n",j);
-    			inode * tmp = read_inode(current_dir->direct_refs[j]);
-    			//printf("tmp->filename = %s, name[i] is %s\n",tmp->filename,name[i]);
-    			if (/*tmp->flags == 4 && */strcmp(name[i],tmp->filename) == 0){
-    				pos = current_dir->direct_refs[j];
-    				current_dir = read_inode(pos);
-    				break;
-    			}
+                //if(check_block(current_dir->direct_refs[j])){
+                    inode * tmp = read_inode(current_dir->direct_refs[j]);
+                    if (/*tmp->flags == 4 && */strcmp(name[i],tmp->filename) == 0){
+                        pos = current_dir->direct_refs[j];
+                        current_dir = read_inode(pos);
+                        break;
+                    }    
+                //}
     		}	
     	}
     }
@@ -86,16 +86,15 @@ int copy_file(char* name, char flags, char* local_file){
     return SUCCESS;
 }
 int print_file(char* name){
-	//printf("\n\nprinting file %s\n",name);
 	int n_chars = 0;
 	// Search for file
 	char* arr[MAX_DIR];
     size_t size = str_split(name, arr, "/");
     int node_pos = find_node(arr,size);
-    inode* node = read_inode(node_pos);
-    if (!is_file(node)){
-        return FAILURE;
+    if(check_block(node_pos)){
+        return 0;
     }
+    inode* node = read_inode(node_pos);
     int i = 0;
     int j = 0;
 	int blk_pos = 0;
@@ -126,10 +125,10 @@ int remove_file(char* name){
 	char* arr[MAX_DIR];
     size_t size = str_split(name, arr, "/");
     int node_pos = find_node(arr,size);
-    inode* node = read_inode(node_pos);
-    if (!is_file(node)){
+    if(check_block(node_pos)){
         return FAILURE;
     }
+    inode* node = read_inode(node_pos);
     int i = 0;
 	int blk_pos = 0;
     int num_blocks = node->file_size / BLK_SIZE + 1;

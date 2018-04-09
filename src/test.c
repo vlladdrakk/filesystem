@@ -8,7 +8,7 @@ extern void* partition;
 void test_files(){
   int i,pos;
   // make a directory
-  inode dir = init_inode("dev",4,0);
+  /*inode dir = init_inode("dev",4,0);
   pos = alloc_block();
   write_inode(dir,pos);
   add_to_directory(read_inode(super->root_block),pos);
@@ -24,19 +24,34 @@ void test_files(){
     write_inode(n, pos);
     printf("adding %d to dir.\n",pos);
     add_to_directory(read_inode(super->root_block), pos);
+  }*/
+  if(mkdir("/dev",D_RW) == SUCCESS){
+    printf("Making Directory /dev ==> SUCCESS\n\n");
   }
+  char* dir = "/dev/sub_dir";
+  char* files[2] = {"/dev/sub_dir/new_file","/dev/sub_dir/new_file2"};
+  char* local_files[2] = {"files/local_file_1.txt","files/local_file_2.txt"};
+  if(mkdir(dir,D_RW) == SUCCESS){
+    printf("Making Directory %s ==> SUCCESS\n\n",dir);
+  }
+  printf("Copying first file to dir %s.\n\n",dir);  
+  copy_file(files[0],F_RW,local_files[0]);
+  print_file(files[0]);
+  
+  printf("Number of free blocks %d\n\n",super->num_free_blocks);
 
-  print_superblock(*super);
-  printf("Copying first file.\n\n");  
-  copy_file("/dev/new_file",1,"files/local_file_1.txt");
-  print_file("/dev/new_file");
+  printf("Copying second file to dir %s.\n\n",dir);
+  copy_file(dir,F_RW,local_files[1]);
+  print_file(files[1]);
   
-  printf("Copying second file.\n\n");
-  copy_file("/dev/sub_dir/new_file2",1,"files/local_file_2.txt");
-  print_file("/dev/sub_dir/new_file2");
-  
-  print_superblock(*super);
+  printf("Number of free blocks %d\n\n",super->num_free_blocks);
+
   printf("\nRemoving new_file2\n\n");
-  remove_file("/dev/sub_dir/new_file2");
-  print_superblock(*super);
+  remove_file(files[1]);
+  printf("Printing removed file.\n\n");
+  int rm = print_file(files[1]);
+  if( rm == 0){
+    printf("File does not exist.\n\n");
+  }
+  printf("Number of free blocks %d\n\n",super->num_free_blocks);
 }

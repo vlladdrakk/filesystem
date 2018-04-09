@@ -92,7 +92,9 @@ void reserve_block(int pos) {
 }
 
 void free_block(int pos) {
+	printf("%d\n",super->block_map[pos/8]);
 	super->block_map[pos/8] &= ~(1 << pos % 8);
+	printf("%d\n",super->block_map[pos/8]);
 	super->num_free_blocks++;
 }
 
