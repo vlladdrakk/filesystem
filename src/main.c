@@ -1,5 +1,6 @@
 #include "fs.h"
 #include "common.h"
+#include "test.h"
 #include <stdio.h>
 
 extern superblock* super;
@@ -10,5 +11,6 @@ int main() {
   test_dirs();
   test_disk_utils(partition);
 
+  test_files();  
   return 0;
 }

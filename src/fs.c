@@ -18,6 +18,10 @@ void print_superblock(superblock sblock) {
 	printf("name: %s\nflags: %d\nroot_block: %d\nnum_free_blocks: %d\nblock_map %d-%d\n",
 		sblock.name, sblock.flags, sblock.root_block, sblock.num_free_blocks, sblock.block_map[1],sblock.block_map[0]);
 }
+void print_node( inode node){
+	printf("name: %s\nflags: %d\nfile_size: %d\ndirect_refs: %n\nindirect_refs %d\n",
+		node.filename, node.flags, node.file_size, node.direct_refs, node.indirect_ref);	
+}
 
 void print_partition() {
 	int x = 30;
@@ -171,3 +175,4 @@ void* format(char* name, char flags, int num_blocks) {
 
 	return partition;
 }
+
