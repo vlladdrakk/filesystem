@@ -64,7 +64,8 @@ int str_split (const char *str, char *parts[], const char *delimiter) {
 
  bad:
   free(copy);
-  for (int j = 0; j < i; j++)
+  int j;
+  for (j = 0; j < i; j++)
     free(parts[j]);
   return -1;
 }
