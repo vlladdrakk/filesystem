@@ -6,7 +6,6 @@
 extern superblock* super;
 extern void* partition;
 void test_files(){
-  int i,pos;
   // make a directory
   /*inode dir = init_inode("dev",4,0);
   pos = alloc_block();
