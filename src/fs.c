@@ -43,26 +43,6 @@ void print_partition() {
 	}
 }
 
-void print_partition() {
-	int x = 30;
-	int y = (super->num_blocks / x) + 1;
-	int pos = 0;
-	puts("Block Map:");
-
-	int i, j;
-	for (i = 0; i < y; i++) {
-		for (j = 0; j < x; j++) {
-			if (pos > super->num_blocks)
-				printf("x ");
-			else
-				printf("%d ", check_block(pos));
-
-			pos++;
-		}
-		printf("\n");
-	}
-}
-
 void* get_position_pointer(int pos) {
 	return partition + (pos * BLK_SIZE);
 }
@@ -112,10 +92,10 @@ void reserve_block(int pos) {
 }
 
 void free_block(int pos) {
-	printf("%d\n",super->block_map[pos/8]);
-	super->block_map[pos/8] &= ~(1 << pos % 8);
-	printf("%d\n",super->block_map[pos/8]);
-	super->num_free_blocks++;
+	if (check_block(pos) == 1){
+		super->block_map[pos/8] &= ~(1 << pos % 8);
+		super->num_free_blocks++;
+	}
 }
 
 int check_block(int pos) {

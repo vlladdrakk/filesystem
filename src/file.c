@@ -18,14 +18,16 @@ int find_node(char** name, int size){
     		for(j=0; j < current_dir->file_size; j++){
                 //if(check_block(current_dir->direct_refs[j])){
                     inode * tmp = read_inode(current_dir->direct_refs[j]);
-                    if (/*tmp->flags == 4 && */strcmp(name[i],tmp->filename) == 0){
+                    if (strcmp(name[i],tmp->filename) == 0){
                         pos = current_dir->direct_refs[j];
                         current_dir = read_inode(pos);
                         break;
                     }    
                 //}
     		}	
-    	}
+    	}else{
+            break;
+        }
     }
 	return pos;
 }
@@ -44,7 +46,7 @@ int copy_file(char* name, char flags, char* local_file){
 	//char** arr = strsplit(name,"/");
 	char* arr[MAX_DIR];
     size_t size = str_split(name, arr, "/");
-	char* file_name = arr[size - 1];
+	char* file_name = arr[size-1];
 	inode new_node = init_inode(file_name,flags,sz);
     int node_pos = alloc_block();
     // TO DO if filesize < size of refs ==> do not create data block
@@ -79,17 +81,24 @@ int copy_file(char* name, char flags, char* local_file){
     	}
     }	
     write_inode(new_node, node_pos);
+
     int dir_pos = find_node(arr,size);
     fclose(fp);
 	// Add node to directory
     add_to_directory(read_inode(dir_pos), node_pos);
-
     return SUCCESS;
 }
 int print_file(char* name){
 	int n_chars = 0;
+	// Search for file
+	char* arr[MAX_DIRS];
+    size_t size = str_split(name, arr, "/");
+    int node_pos = find_node(arr,size);
+    inode* node = read_inode(node_pos);
+    if(check_block(node_pos) == 0 || is_file(node) == 0){
+        return 0;
+    }
 
-    inode* node = get_inode(name);
     int i = 0;
     int j = 0;
 	int blk_pos = 0;
@@ -120,10 +129,10 @@ int remove_file(char* name){
 	char* arr[MAX_DIR];
     size_t size = str_split(name, arr, "/");
     int node_pos = find_node(arr,size);
-    if(check_block(node_pos)){
+    inode* node = read_inode(node_pos);
+    if(check_block(node_pos) == 0 || is_file(node) == 0){
         return FAILURE;
     }
-    inode* node = read_inode(node_pos);
     int i = 0;
 	int blk_pos = 0;
     int num_blocks = node->file_size / BLK_SIZE + 1;
@@ -134,10 +143,9 @@ int remove_file(char* name){
     		int* block = (int*)get_position_pointer(node->indirect_ref);
 			blk_pos = block[i-190];
     	}
-    	
     	free_block(blk_pos);
     }
-    int dir_pos = find_node(arr,size-1);
+    int dir_pos = find_node(arr,size -1 );
     remove_from_directory(read_inode(dir_pos),node_pos);
     free_block(node_pos);
     return SUCCESS;

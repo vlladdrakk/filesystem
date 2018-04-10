@@ -33,6 +33,8 @@ void test_files(){
   if(mkdir(dir,D_RW) == SUCCESS){
     printf("Making Directory %s ==> SUCCESS\n\n",dir);
   }
+  printf("Number of free blocks %d\n\n",super->num_free_blocks);
+
   printf("Copying first file to dir %s.\n\n",dir);  
   copy_file(files[0],F_RW,local_files[0]);
   print_file(files[0]);
@@ -40,17 +42,29 @@ void test_files(){
   printf("Number of free blocks %d\n\n",super->num_free_blocks);
 
   printf("Copying second file to dir %s.\n\n",dir);
-  copy_file(dir,F_RW,local_files[1]);
+  copy_file(files[1],F_RW,local_files[1]);
   print_file(files[1]);
   
   printf("Number of free blocks %d\n\n",super->num_free_blocks);
 
-  printf("\nRemoving new_file2\n\n");
+  printf("\nRemoving %s\n\n",files[1]);
   remove_file(files[1]);
   printf("Printing removed file.\n\n");
   int rm = print_file(files[1]);
   if( rm == 0){
     printf("File does not exist.\n\n");
   }
+
+  printf("Number of free blocks %d\n\n",super->num_free_blocks);
+
+
+  printf("\nRemoving %s\n\n",files[0]);
+  remove_file(files[0]);
+  printf("Printing removed file.\n\n");
+  rm = print_file(files[0]);
+  if( rm == 0){
+    printf("File does not exist.\n\n");
+  }
+
   printf("Number of free blocks %d\n\n",super->num_free_blocks);
 }
