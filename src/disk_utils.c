@@ -42,6 +42,9 @@ void* load_from_disk(char* text_file) {
 
 	fclose(fd);
 
+	// Set superblock
+	super = (superblock*)partition;
+
 	return partition;
 }
 
