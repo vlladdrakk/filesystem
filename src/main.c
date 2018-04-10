@@ -10,6 +10,6 @@ int main() {
   format("p1", 1, 1024);
   test_dirs();
   test_disk_utils(partition);
-  test_files();  
+  test_files(); 
   return 0;
 }

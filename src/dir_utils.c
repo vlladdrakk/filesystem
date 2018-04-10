@@ -66,6 +66,9 @@ int ls(char* path) {
 	// Get inode
 	inode* dir = get_inode(path);
 
+	if (dir == NULL)
+		return FAILURE;
+
 	print_dir(dir);
 
 	return SUCCESS;

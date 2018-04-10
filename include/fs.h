@@ -1,6 +1,8 @@
 #ifndef FS_H
 #define FS_H
 
+#include "common.h"
+
 typedef struct {
 	char name[255];
 	char flags; /* 0 – read; 1 – write */
@@ -12,7 +14,8 @@ typedef struct {
 
 typedef struct {
 	char filename[255];
-	char flags; /* file: 0–read; 1–write; dir: 3–read; 4-write*/int file_size; /* number of bytes in the file */
+	char flags; /* file: 0–read; 1–write; dir: 3–read; 4-write*/
+	int file_size; /* number of bytes in the file */
 	int direct_refs[190]; /* direct references */
 	int indirect_ref; /* indirect reference */
 } inode;

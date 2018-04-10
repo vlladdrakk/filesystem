@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "file.h"
 #include "dir_utils.h"
+#include "common.h"
 
 superblock* super;
 void* partition;
@@ -44,7 +45,7 @@ int copy_file(char* name, char flags, char* local_file){
 	int sz = ftell(fp);
     rewind(fp);
 	//char** arr = strsplit(name,"/");
-	char* arr[MAX_DIR];
+	char* arr[MAX_DIRS];
     size_t size = str_split(name, arr, "/");
 	char* file_name = arr[size-1];
 	inode new_node = init_inode(file_name,flags,sz);
@@ -126,7 +127,7 @@ int print_file(char* name){
 }
 
 int remove_file(char* name){
-	char* arr[MAX_DIR];
+	char* arr[MAX_DIRS];
     size_t size = str_split(name, arr, "/");
     int node_pos = find_node(arr,size);
     inode* node = read_inode(node_pos);

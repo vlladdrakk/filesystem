@@ -1,6 +1,7 @@
 #include "test.h"
 #include "dir_utils.h"
 #include "file.h"
+#include "common.h"
 #include <stdio.h>
 
 extern superblock* super;
