@@ -92,8 +92,10 @@ void reserve_block(int pos) {
 }
 
 void free_block(int pos) {
-	super->block_map[pos/8] &= ~(1 << pos % 8);
-	super->num_free_blocks++;
+	if (check_block(pos) == 1){
+		super->block_map[pos/8] &= ~(1 << pos % 8);
+		super->num_free_blocks++;
+	}
 }
 
 int check_block(int pos) {

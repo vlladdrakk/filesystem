@@ -94,7 +94,7 @@ int print_file(char* name){
     size_t size = str_split(name, arr, "/");
     int node_pos = find_node(arr,size);
     inode* node = read_inode(node_pos);
-    if(is_file(node) == 0){
+    if(check_block(node_pos) == 0 || is_file(node) == 0){
         return 0;
     }
     int i = 0;
@@ -128,7 +128,7 @@ int remove_file(char* name){
     size_t size = str_split(name, arr, "/");
     int node_pos = find_node(arr,size);
     inode* node = read_inode(node_pos);
-    if(!check_block(node_pos) || is_file(node) == 0){
+    if(check_block(node_pos) == 0 || is_file(node) == 0){
         return FAILURE;
     }
     int i = 0;
@@ -141,7 +141,6 @@ int remove_file(char* name){
     		int* block = (int*)get_position_pointer(node->indirect_ref);
 			blk_pos = block[i-190];
     	}
-    	
     	free_block(blk_pos);
     }
     int dir_pos = find_node(arr,size -1 );

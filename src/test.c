@@ -34,6 +34,8 @@ void test_files(){
   if(mkdir(dir,D_RW) == SUCCESS){
     printf("Making Directory %s ==> SUCCESS\n\n",dir);
   }
+  printf("Number of free blocks %d\n\n",super->num_free_blocks);
+
   printf("Copying first file to dir %s.\n\n",dir);  
   copy_file(files[0],F_RW,local_files[0]);
   print_file(files[0]);
