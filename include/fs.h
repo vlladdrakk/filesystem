@@ -71,6 +71,12 @@ extern int rmdir(char* name);
 
 extern void test_dirs();
 
+extern int copy_file(char* name, char flags, char* local_file);
+
+extern int remove_file(char* name);
+
+extern int print_file(char* name);
+
 extern int ls(char* path);
 
 #endif
