@@ -14,9 +14,9 @@ inode** get_children(inode* dir) {
 	// Create child list
 	inode** child_list = malloc(sizeof(inode*));
 	int list_size = 0;
-
+	int num_of_inodes = dir->file_size / 4;
 	// Check in direct references
-	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
+	int direct_limit = num_of_inodes > MAX_DREFS ? MAX_DREFS : num_of_inodes;
 	int i;
 	for (i = 0; i < direct_limit; i++) {
 		if (dir->direct_refs[i] == 0)
@@ -27,7 +27,7 @@ inode** get_children(inode* dir) {
 		child_list[list_size - 1] = read_inode(dir->direct_refs[i]);
 	}
 
-	if (dir->file_size > MAX_DREFS) {
+	if (num_of_inodes > MAX_DREFS) {
 		// Check indirect refs
 		int* refs = get_position_pointer(dir->indirect_ref);
 		int i = 0;
@@ -48,7 +48,7 @@ void print_dir(inode* dir) {
 	inode** children = get_children(dir);
 	printf("Flags\tSize\tName\n");
 	int i;
-	for (i = 0; i < dir->file_size; i++) {
+	for (i = 0; i < (dir->file_size/4); i++) {
 		inode* child = children[i];
 		printf("%d\t%d\t%s\n", child->flags, child->file_size, child->filename);
 	}
@@ -81,8 +81,10 @@ inode* get_child(inode* dir, char* child) {
 	if (child == NULL)
 		return NULL;
 
+	int num_of_inodes = dir->file_size / 4;
+
 	// Check in direct references
-	int direct_limit = dir->file_size > MAX_DREFS ? MAX_DREFS : dir->file_size;
+	int direct_limit = num_of_inodes > MAX_DREFS ? MAX_DREFS : num_of_inodes;
 	int i;
 	for (i = 0; i < direct_limit; i++) {
 		if (dir->direct_refs[i] == 0)
@@ -93,7 +95,7 @@ inode* get_child(inode* dir, char* child) {
 			return temp;
 	}
 
-	if (dir->file_size > MAX_DREFS) {
+	if (num_of_inodes > MAX_DREFS) {
 		// Check indirect refs
 		int* refs = get_position_pointer(dir->indirect_ref);
 		int i = 0;
@@ -138,7 +140,7 @@ int mkdir(char* name, char flags) {
 	}
 
 	// Check that the directory is not full
-	if (parent->file_size == MAX_DIRS) {
+	if ((parent->file_size/4) == MAX_DIRS) {
 		#ifdef DEBUG
 		printf("mkdir: directory is full\n");
 		#endif
@@ -326,9 +328,10 @@ char* get_dir_name(char* absolute_path) {
 }
 
 int add_to_directory(inode* directory, int inode_pos) {
-	if (directory->file_size < MAX_DREFS) {
+	int num_of_inodes = directory->file_size / 4;
+	if (num_of_inodes < MAX_DREFS) {
 		// Use direct refs
-		directory->direct_refs[directory->file_size] = inode_pos;
+		directory->direct_refs[num_of_inodes] = inode_pos;
 	} else {
 		// Use indirect references
 		if (directory->indirect_ref == 0) {
@@ -339,10 +342,10 @@ int add_to_directory(inode* directory, int inode_pos) {
 		}
 
 		int* block = (int*)get_position_pointer(directory->indirect_ref);
-		block[directory->file_size-MAX_DREFS] = inode_pos;
+		block[num_of_inodes-MAX_DREFS] = inode_pos;
 	}
 
-	directory->file_size++;
+	directory->file_size += 4;
 
 	return SUCCESS;
 }
@@ -352,6 +355,7 @@ int remove_from_directory(inode* directory, int inode_pos) {
 	if (check_block(inode_pos) == 0)
 		return FAILURE; // shouldn't add an unreserved block
 
+	int num_of_inodes = directory->file_size / 4;
 	// find reference to inode
 	int i;
 	int flag = 0;
@@ -365,7 +369,7 @@ int remove_from_directory(inode* directory, int inode_pos) {
 	if (!flag && directory->indirect_ref != 0){
 		int block_index = -1;
 		int* block = (int*)get_position_pointer(directory->indirect_ref);
-		for (i = 0; i< directory->file_size - MAX_DREFS; i++){
+		for (i = 0; i< num_of_inodes - MAX_DREFS; i++){
 			if (block[i] == inode_pos){
 				block[i] = 0;
 				free_block(inode_pos);
@@ -376,11 +380,11 @@ int remove_from_directory(inode* directory, int inode_pos) {
 		}
 		if (block_index >= 0){
 			// Put the last block_ref into empty block
-			block[block_index] = block[directory->file_size - MAX_DREFS - 1];
+			block[block_index] = block[num_of_inodes - MAX_DREFS - 1];
 		}
 
 	}
-	directory->file_size --;
+	directory->file_size -= 4;
 
 	return SUCCESS;
 }
@@ -458,7 +462,7 @@ void test_dirs() {
 	inode* test_dir = get_parent_dir(dir_name);
 	int full_ret = mkdir("/test/testing", D_RO); // This should fail because the directory is full
 
-	if (num_dirs == test_dir->file_size && full_ret == FAILURE)
+	if (num_dirs == (test_dir->file_size/4) && full_ret == FAILURE)
 		puts("Success!");
 	else {
 		puts("Failed!");

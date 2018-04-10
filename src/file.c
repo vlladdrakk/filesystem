@@ -16,7 +16,7 @@ int find_node(char** name, int size){
     inode* current_dir = read_inode(super->root_block);
     for (i = 0; i < size /*- 1*/ ; i++){
     	if (current_dir->flags == 4 ||  current_dir->flags == 3){ 
-    		for(j=0; j < current_dir->file_size; j++){
+    		for(j=0; j < (current_dir->file_size/4); j++){
                 //if(check_block(current_dir->direct_refs[j])){
                     inode * tmp = read_inode(current_dir->direct_refs[j]);
                     if (strcmp(name[i],tmp->filename) == 0){
