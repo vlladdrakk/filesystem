@@ -19,4 +19,6 @@ int mkdir(char* name, char flags);
 
 int rmdir(char* name);
 
+inode* get_inode(char* absolute_path);
+
 #endif

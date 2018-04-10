@@ -63,10 +63,10 @@ int ls(char* path) {
 	if (valid_dir == FAILURE)
 		return FAILURE;
 
-	// Get parent inode
-	inode* parent = get_parent_dir(path);
+	// Get inode
+	inode* dir = get_inode(path);
 
-	print_dir(parent);
+	print_dir(dir);
 
 	return SUCCESS;
 }
@@ -279,6 +279,24 @@ inode* get_parent_dir(char* absolute_path) {
 	current_dir = read_inode(super->root_block);
 	int i = 0;
 	while (path[i+1] != NULL) { // Loop while there is another directory
+		current_dir = get_child(current_dir, path[i]);
+		i++;
+	}
+	
+	return current_dir;
+}
+
+inode* get_inode(char* absolute_path) {
+	char** path = strsplit(absolute_path, "/");
+	inode* current_dir;
+
+	// Handle getting root directory
+	if (path[0] == NULL)
+		return read_inode(super->root_block);
+
+	current_dir = read_inode(super->root_block);
+	int i = 0;
+	while (path[i] != NULL) { // Loop while there is another directory
 		current_dir = get_child(current_dir, path[i]);
 		i++;
 	}
