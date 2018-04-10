@@ -18,6 +18,30 @@ void print_superblock(superblock sblock) {
 	printf("name: %s\nflags: %d\nroot_block: %d\nnum_free_blocks: %d\nblock_map %d-%d\n",
 		sblock.name, sblock.flags, sblock.root_block, sblock.num_free_blocks, sblock.block_map[1],sblock.block_map[0]);
 }
+void print_node( inode node){
+	printf("name: %s\nflags: %d\nfile_size: %d\ndirect_refs: %n\nindirect_refs %d\n",
+		node.filename, node.flags, node.file_size, node.direct_refs, node.indirect_ref);	
+}
+
+void print_partition() {
+	int x = 30;
+	int y = (super->num_blocks / x) + 1;
+	int pos = 0;
+	puts("Block Map:");
+
+	int i, j;
+	for (i = 0; i < y; i++) {
+		for (j = 0; j < x; j++) {
+			if (pos > super->num_blocks)
+				printf("x ");
+			else
+				printf("%d ", check_block(pos));
+
+			pos++;
+		}
+		printf("\n");
+	}
+}
 
 void print_partition() {
 	int x = 30;
@@ -88,7 +112,9 @@ void reserve_block(int pos) {
 }
 
 void free_block(int pos) {
+	printf("%d\n",super->block_map[pos/8]);
 	super->block_map[pos/8] &= ~(1 << pos % 8);
+	printf("%d\n",super->block_map[pos/8]);
 	super->num_free_blocks++;
 }
 
@@ -171,3 +197,4 @@ void* format(char* name, char flags, int num_blocks) {
 
 	return partition;
 }
+

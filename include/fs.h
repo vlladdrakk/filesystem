@@ -17,6 +17,10 @@ typedef struct {
 	int indirect_ref; /* indirect reference */
 } inode;
 
+typedef struct{
+	char data[BLK_SIZE];
+} block;
+
 void print_block(int* block);
 
 void print_superblock(superblock sblock);

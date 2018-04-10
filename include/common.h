@@ -16,5 +16,6 @@
 #define D_RW 4 // Directory Read Write
 
 char** strsplit(char* str, const char* delimiter);
+int str_split (const char *str, char *parts[], const char *delimiter);
 
 #endif
