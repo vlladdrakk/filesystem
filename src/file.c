@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "file.h"
+#include "dir_utils.h"
 
 superblock* super;
 void* partition;
@@ -87,14 +88,8 @@ int copy_file(char* name, char flags, char* local_file){
 }
 int print_file(char* name){
 	int n_chars = 0;
-	// Search for file
-	char* arr[MAX_DIR];
-    size_t size = str_split(name, arr, "/");
-    int node_pos = find_node(arr,size);
-    if(check_block(node_pos)){
-        return 0;
-    }
-    inode* node = read_inode(node_pos);
+
+    inode* node = get_inode(name);
     int i = 0;
     int j = 0;
 	int blk_pos = 0;
