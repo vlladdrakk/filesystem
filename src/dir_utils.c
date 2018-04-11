@@ -123,13 +123,11 @@ int mkdir(char* name, char flags) {
 
 	// validate path
 	int valid_dir = validate_path(name);
-
 	if (valid_dir == FAILURE)
 		return FAILURE;
 
 	// Get parent inode
 	inode* parent = get_parent_dir(name);
-
 	// Run checks on parent
 	// Check if writable
 	if (parent->flags != 4) {
@@ -149,7 +147,7 @@ int mkdir(char* name, char flags) {
 
 	// Get the name of the new directory
 	char* dir_name = get_dir_name(name);
-
+	//printf("dir_name %s",name);
 	// create directory inode
 	inode new_dir = init_inode(dir_name, flags, 0);
 	int dir_block = alloc_block();
@@ -274,20 +272,33 @@ int validate_path(char* absolute_path) {
 // Gets the parent of the directory in the given path.
 // This function assumes the directory is valid.
 inode* get_parent_dir(char* absolute_path) {
-	char** path = strsplit(absolute_path, "/");
-	inode* current_dir;
+	// char** path = strsplit(absolute_path, "/");
+	// inode* current_dir;
 
-	// Handle getting root directory
-	if (path[0] == NULL)
+	// // Handle getting root directory
+	// if (path[0] == NULL)
+	// 	return read_inode(super->root_block);
+
+	// current_dir = read_inode(super->root_block);
+	// int i = 0;
+	// while (path[i+1] != NULL) { // Loop while there is another directory
+	// 	current_dir = get_child(current_dir, path[i]);
+	// 	i++;
+	// }
+	// printf("parent dir = %s\n",current_dir->filename);
+	// //return current_dir;
+	//printf("absolute_path = %s\n",absolute_path);
+	char* pathh[MAX_DIRS];
+	size_t size = str_split(absolute_path,pathh,"/");
+	//Handle getting root directory
+	if (pathh[0] == NULL)
 		return read_inode(super->root_block);
 
-	current_dir = read_inode(super->root_block);
 	int i = 0;
-	while (path[i+1] != NULL) { // Loop while there is another directory
-		current_dir = get_child(current_dir, path[i]);
-		i++;
+	inode* current_dir = read_inode(super->root_block);
+	for(i = 0; i < size - 1;i++){
+		current_dir = get_child(current_dir,pathh[i]);
 	}
-	
 	return current_dir;
 }
 
@@ -310,21 +321,30 @@ inode* get_inode(char* absolute_path) {
 }
 
 char* get_dir_name(char* absolute_path) {
-	char** path = strsplit(absolute_path, "/");
+	// char** path = strsplit(absolute_path, "/");
 	
-	// Loop through the string array to get to the end
-	int i = 0;
-	while(path[i+1] != NULL)
-		i++;
+	// // Loop through the string array to get to the end
+	// int i = 0;
+	// while(path[i+1] != NULL)
+	// 	i++;
 
-	// Copy the directory name
-	char* copied_str = malloc(strlen(path[i]) + 1);
-	strncpy(copied_str, path[i], strlen(path[i]));
-	copied_str[strlen(path[i])] = '\0';
+	// // Copy the directory name
+	// char* copied_str = malloc(strlen(path[i]) + 1);
+	// strncpy(copied_str, path[i], strlen(path[i]));
+	// copied_str[strlen(path[i])] = '\0';
 
-	free(path); // Free the string array
+	// free(path); // Free the string array
 
-	return copied_str;
+	// return copied_str;
+
+	char* path[MAX_DIRS];
+	size_t size = str_split(absolute_path,path,"/");
+	/*for(int i=0; i<size; i++){
+		printf("%s",path[i]);
+	}
+	printf("path = %s\n",path);*/
+	//printf("absolut_path = %s,path[%d] = %s\n",absolute_path,size - 1,path[size - 1]);
+	return path[size - 1];
 }
 
 int add_to_directory(inode* directory, int inode_pos) {
@@ -411,10 +431,17 @@ void test_dirs() {
 	printf("\nTest: Creating subdirectories...");
 	int conf_ret = mkdir("/etc/conf", D_RW); // this should fail because /etc is read only
 	int log_ret = mkdir("/var/log", D_RW);
-
 	if (conf_ret == SUCCESS)
 		puts("Failed! Was able to create subdirectory in read only directory.");
 	else if (log_ret == FAILURE)
+		puts("Failed to create subdirectory!");
+	else
+		puts("Success!");
+
+	// Creating subdirectories
+	printf("\nTest: Creating sub subdirectories...");
+	int sub_log_ret = mkdir("/var/log/sub", D_RW);
+	if (sub_log_ret == FAILURE)
 		puts("Failed to create subdirectory!");
 	else
 		puts("Success!");

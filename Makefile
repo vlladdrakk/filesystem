@@ -8,6 +8,7 @@ CFLAGS=-m32 -Iinclude -Wall -g
 build:
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(SRC) -o $(MAIN)
+	@$(MAIN)
 
 clean:
 	rm bin/*
@@ -17,3 +18,4 @@ run:
 
 debug:
 	gdb $(MAIN)
+

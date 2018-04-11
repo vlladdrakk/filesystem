@@ -7,33 +7,19 @@
 extern superblock* super;
 extern void* partition;
 void test_files(){
-  // make a directory
-  /*inode dir = init_inode("dev",4,0);
-  pos = alloc_block();
-  write_inode(dir,pos);
-  add_to_directory(read_inode(super->root_block),pos);
-  printf("dev directory position = %d\n", pos);
-  dir = init_inode("sub_dir",4,0);
-  int pos2 = alloc_block();
-  write_inode(dir, pos2);
-  add_to_directory(read_inode(pos),pos2);
-  printf("sub_dir directory position = %d\n", pos2);
-  for (i=0; i<7; i++) {
-    inode n = init_inode("test"+i, 1, 10);
-    pos = alloc_block();
-    write_inode(n, pos);
-    printf("adding %d to dir.\n",pos);
-    add_to_directory(read_inode(super->root_block), pos);
-  }*/
-  if(mkdir("/dev",D_RW) == SUCCESS){
+  puts("TEST FILES\n");
+  partition = format("new partition",1,2048);
+  
+  if(mkdir("/var",D_RW) == SUCCESS){
     printf("Making Directory /dev ==> SUCCESS\n\n");
   }
-  char* dir = "/dev/sub_dir";
-  char* files[2] = {"/dev/sub_dir/new_file","/dev/sub_dir/new_file2"};
+  char* dir = "/var/log";
+  char* files[2] = {"/var/log/new_file","/var/new_file2"};
   char* local_files[2] = {"files/local_file_1.txt","files/local_file_2.txt"};
-  if(mkdir(dir,D_RW) == SUCCESS){
-    printf("Making Directory %s ==> SUCCESS\n\n",dir);
+  if(mkdir("/var/log",D_RW) == SUCCESS ){
+    printf("Making Directory /var/log ==> SUCCESS\n\n");
   }
+
   printf("Number of free blocks %d\n\n",super->num_free_blocks);
 
   printf("Copying first file to dir %s.\n\n",dir);  
